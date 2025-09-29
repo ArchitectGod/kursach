@@ -31,6 +31,16 @@ typedef struct {
     int bestTime;        // лучшая попытка (время в секундах, меньше — лучше)
 } Player;
 
+typedef struct Menu {
+    char** items; // массив строк пунктов меню
+    int itemCount; // количество пунктов
+    int selectedIndex; // выбранный пункт
+    int menuType;// тип меню (0-главное, 1-сложность, и т.д.)
+    void (*displayFunc)(struct Menu*); // функция отображения
+    void (*handleInputFunc)(struct Menu*, char); // функция обработки ввода
+    void* userData; // пользовательские данные (для игры, настроек и т.д.)
+} Menu;
+
 int toggleFlag(Board board, int x, int y, Player player)
 {
     int index = y * board.width + x; //Вычисление индекса клетки в массиве
@@ -61,46 +71,33 @@ int toggleFlag(Board board, int x, int y, Player player)
     }
     return 0; //Всё прошло успешно, игра продолжается
 }
-//Вспомогательная функция для доступа к клетке
-Cell* getCell(Board* board, int x, int y) {
-    if (x < 0 || x >= board->width || y < 0 || y >= board->height) {
-        return NULL; // выход за пределы
-    }
-    return &board->cells[y * board->width + x];
-}
 
-//Инициализация игрового поля
-Board* initBoard(int width, int height, int bombs) {
-    Board* board = malloc(sizeof(Board));
-    if (!board) return NULL;
-
-    board->width = width;
-    board->height = height;
-    board->totalBombs = bombs;
-    board->safeCellsLeft = width * height - bombs;
-
-    board->cells = calloc(width * height, sizeof(Cell));
-    if (!board->cells) {
-        free(board);
+Board* createBoard(int width, int height, int bombsTotal) {
+    // Проверка валидности параметров
+    if (width <= 0 height <= 0 bombsTotal <= 0) {
+        printf("Ошибка: недопустимые параметры поля\n");
         return NULL;
     }
-
-    //все клетки по умолчанию пустые
-    for (int i = 0; i < width * height; i++) {
-        board->cells[i].isBomb = false;
-        board->cells[i].isRevealed = false;
-        board->cells[i].isFlagged = false;
-        board->cells[i].adjacentBombs = 0;
+    if (bombsTotal >= width * height) {
+        printf("Ошибка: слишком много бомб для данного размера поля\n");
+        return NULL;
     }
-
+    // Выделение памяти для структуры Board
+    Board* board = (Board*)malloc(sizeof(Board));
+    if (board == NULL) {
+        printf("Ошибка выделения памяти для поля\n");
+        return NULL;
+    }
+    // Инициализация параметров поля
+    board->width = width;
+    board->height = height;
+    board->bombsTotal = bombsTotal;
+    board->closedSafeCells = (width * height) - bombsTotal;
+    //Здесь необходимо добавить выделение памяти для массива клеток
+    for (int i = 0; i < totalCells; i++) {
+          // Инициализация всех клеток здесь
+    }
     return board;
-}
-
-//Освобождение памяти
-void freeBoard(Board* board) {
-    if (!board) return;
-    free(board->cells);
-    free(board);
 }
 
 
