@@ -125,7 +125,7 @@ Board* createBoard(int width, int height, int bombsTotal) {
     board->closedSafeCells = (width * height) - bombsTotal;
     //Здесь необходимо добавить выделение памяти для массива клеток
     for (int i = 0; i < totalCells; i++) {
-          // Инициализация всех клеток здесь
+          // Инициализация всех клеток здесь.
     }
     return board;
 }
