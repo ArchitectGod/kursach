@@ -9,10 +9,12 @@ int main()
 }
 
 typedef struct {
-    bool isBomb;        // есть ли бомба
-    bool isRevealed;    // открыта ли клетка
-    bool isFlagged;     // стоит ли флажок
-    int adjacentBombs;  // число бомб вокруг
+    int isBomb; //1 yes or 0 no
+    int isOpen; //1 yes or 0 no
+    int isFlag; //1 yes or 0 no
+    int countBomb; //количество бомб вокруг
+    int coordinateX; //координата клетки по Х
+    int coordinateY; //координата клетки по У
 } Cell;
 
 typedef struct {
@@ -40,6 +42,34 @@ typedef struct Menu {
     void (*handleInputFunc)(struct Menu*, char); // функция обработки ввода
     void* userData; // пользовательские данные (для игры, настроек и т.д.)
 } Menu;
+
+int openCell(Board board, int x, int y, Player player)
+{
+    int index = y * board.width + x; // вычисление индекса клетки в одномерном массиве
+    if (x < 0 || x >= board.width || y < 0 || y >= board.height) //проверка координат
+        return -1; // ошибка: координаты вне поля
+    Cell cell = board.cells[index];
+    if (cell.isOpen == 1 || cell.isFlag == 1) // проверка состояния клетки
+        return 0; // клетка не может быть открыта
+    board.cells[index].isOpen = 1; //открытие клетки
+    player.openedCells = player.openedCells + 1;
+    if (cell.isBomb == 1) // в случае, если в клетке скрывается бомба
+    {
+        player.mistakes = player.mistakes + 1;
+        return 1; // проигрыш (взрыв)
+    }
+    if (cell.isBomb == 0) // в случае, если клетка безопасная
+    {
+        board.closedSafeCells = board.closedSafeCells - 1;
+        if (cell.countBomb == 0) // в случае, если вокруг нет бомб
+        {
+            (алгоритм для открытия всех клеток вокруг)
+        }
+    }
+    if (board.closedSafeCells == 0)  // в случае, если все безопасные клетки открыты
+        return 2;
+    return 0; // игра продолжается
+}
 
 int toggleFlag(Board board, int x, int y, Player player)
 {
