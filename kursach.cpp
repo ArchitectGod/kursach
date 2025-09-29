@@ -60,13 +60,13 @@ int openCell(Board board, int x, int y, Player player)
     }
     if (cell.isBomb == 0) // в случае, если клетка безопасная
     {
-        board.closedSafeCells = board.closedSafeCells - 1;
+        board.safeCellsLeft = board.safeCellsLeft - 1;
         if (cell.countBomb == 0) // в случае, если вокруг нет бомб
         {
-            (алгоритм для открытия всех клеток вокруг)
+            // (алгоритм для открытия всех клеток вокруг)
         }
     }
-    if (board.closedSafeCells == 0)  // в случае, если все безопасные клетки открыты
+    if (board.safeCellsLeft == 0)  // в случае, если все безопасные клетки открыты
         return 2;
     return 0; // игра продолжается
 }
