@@ -45,4 +45,39 @@ int toggleFlag(Board board, int x, int y, Player player)
 }
 
 
+typedef struct {
+    char name[50];//Имя
+    int time; //Потраченное время
+    int height;//Высота поля
+    int width;//Ширина поля
+    int bombs;//Количество бомб
+    int day;//день
+    int month;//Месяц
+    int age;//Год
+    int win;//Победа ли 1- да 2 - взрыв
+}leaderboard;
 
+// В разработке
+int printleaderboard() 
+{
+//    FILE* fptr; // Создание указателя на файл
+//    fptr = fopen("Gamefile.txt", "r"); // Открытие файла
+//    // Проверка на открытие
+//    leaderboard leaderboard; // Структура для временного хранения
+//    printf(); //Шапка
+//    while (fscanf() != EOF) // Чтение из файла
+//    {
+//        printf(); // Печать
+//    }
+//    // При успехе возвращает 0 при неудаче ( Не открылся файл ) 1
+}
+
+// В разработке
+int saveleaderboard(leaderboard leaderboard)
+{
+//    FILE fptr    Создание указателя на файл
+//        fptr = fopen   Открытие файла
+//        ..Обработка открытия файла
+//        fprintf Сохранение в файл
+//        При удаче возвращает 0 при неудаче 1
+}
