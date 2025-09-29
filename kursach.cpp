@@ -2,10 +2,7 @@
 
 int main()
 {
-    printf("Привет, Мир!");
 
-
-    
 }
 
 typedef struct {
