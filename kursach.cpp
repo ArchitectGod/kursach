@@ -68,7 +68,7 @@ int openCell(Board board, int x, int y, Player player)
     }
     if (board.safeCellsLeft == 0)  // в случае, если все безопасные клетки открыты
         return 2;
-    return 0; // игра продолжается
+    return 0; //   игра продолжается
 }
 
 int toggleFlag(Board board, int x, int y, Player player)
@@ -76,7 +76,7 @@ int toggleFlag(Board board, int x, int y, Player player)
     int index = y * board.width + x; //Вычисление индекса клетки в массиве
     if (x < 0 || x >= board.width || y < 0 || y >= board.height) //Проверка, корректны ли координаты
     {
-        return -1; //Ошибка! координаты вне поля
+        return -1; // Ошибка! координаты вне поля
     }
     Cell cell = board.cells[index]; //Получаем клетку
     if (cell.isOpen == 1) //Если клетка открыта
