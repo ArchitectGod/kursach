@@ -33,15 +33,15 @@ typedef struct {
     int bestTime;        // лучшая попытка (время в секундах, меньше — лучше)
 } Player;
 
-typedef struct Menu {
-    char** items; // массив строк пунктов меню
-    int itemCount; // количество пунктов
-    int selectedIndex; // выбранный пункт
-    int menuType;// тип меню (0-главное, 1-сложность, и т.д.)
-    void (*displayFunc)(struct Menu*); // функция отображения
-    void (*handleInputFunc)(struct Menu*, char); // функция обработки ввода
-    void* userData; // пользовательские данные (для игры, настроек и т.д.)
-} Menu;
+
+typedef struct {
+    Board* board;        // указатель на игровое поле
+    Player* player;      // указатель на игрока
+    int state;           // 0 - RUNNING, 1 - WON, 2 - LOST
+    time_t startTime;    // время начала
+    time_t pauseTime;    // время паузы
+} Game;
+
 
 int openCell(Board board, int x, int y, Player player)
 {
