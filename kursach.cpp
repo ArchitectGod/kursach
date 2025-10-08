@@ -33,7 +33,6 @@ typedef struct {
     int bestTime;        // лучшая попытка (время в секундах, меньше — лучше)
 } Player;
 
-
 typedef struct {
     Board* board;        // указатель на игровое поле
     Player* player;      // указатель на игрока
@@ -42,6 +41,16 @@ typedef struct {
     time_t pauseTime;    // время паузы
 } Game;
 
+typedef struct {
+    int autoBombs;  // 1 - автоматически расставлять бомбы
+    int sounds;     // 1 - звуки включены
+    int difficulty; // 0 - легко, 1 - средне, 2 - сложно
+} Settings;
+
+typedef struct {
+    char filename[100]; //имя файла для записи
+    FILE* file; //указатель на файл
+} Logger;
 
 int openCell(Board board, int x, int y, Player player)
 {
@@ -129,7 +138,6 @@ Board* createBoard(int width, int height, int bombsTotal) {
     }
     return board;
 }
-
 
 typedef struct {
     char name[50];//Имя
