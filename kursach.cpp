@@ -64,6 +64,165 @@ typedef struct {
     int win;//Победа ли 1- да 2 - взрыв
 }leaderboard;
 
+// Создание новой клетки
+Cell createCell(int x, int y) {
+    Cell cell;
+    cell.isBomb = 0;
+    cell.isOpen = 0;
+    cell.isFlag = 0;
+    cell.countBomb = 0;
+    cell.coordinateX = x;
+    cell.coordinateY = y;
+    return cell;
+}
+
+// Вывод информации о клетке
+void printCell(Cell cell) {
+    printf("Клетка [%d,%d]: ", cell.coordinateX, cell.coordinateY);
+    if (cell.isOpen) {
+        if (cell.isBomb) {
+            printf("Бомба");
+        }
+        else {
+            printf("Бомб вокруг: %d", cell.countBomb);
+        }
+    }
+    else if (cell.isFlag) {
+        printf("Флаг");
+    }
+    else {
+        printf("Закрыта");
+    }
+    printf("\n");
+}
+
+// Открыть клетку
+void openCell(Cell* cell) {
+    cell->isOpen = 1;
+    cell->isFlag = 0;
+}
+
+// Поставить/убрать флаг
+void toggleFlag(Cell* cell) {
+    if (!cell->isOpen) {
+        cell->isFlag = !cell->isFlag;
+    }
+}
+
+// Установить бомбу
+void setBomb(Cell* cell) {
+    cell->isBomb = 1;
+}
+
+
+// Создание поля
+Board* createBoard(int width, int height, int totalBombs) {
+    Board* board = (Board*)malloc(sizeof(Board));
+    board->width = width;
+    board->height = height;
+    board->totalBombs = totalBombs;
+    board->safeCellsLeft = width * height - totalBombs;
+    board->cells = (Cell*)malloc(width * height * sizeof(Cell));
+
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            board->cells[y * width + x] = createCell(x, y);
+        }
+    }
+    return board;
+}
+
+// Вывод поля
+void printBoard(Board* board) {
+    printf("   ");
+    for (int x = 0; x < board->width; x++) {
+        printf("%2d ", x);
+    }
+    printf("\n");
+
+    for (int y = 0; y < board->height; y++) {
+        printf("%2d ", y);
+        for (int x = 0; x < board->width; x++) {
+            Cell cell = board->cells[y * board->width + x];
+            if (cell.isOpen) {
+                if (cell.isBomb) {
+                    printf(" * ");
+                }
+                else {
+                    printf(" %d ", cell.countBomb);
+                }
+            }
+            else if (cell.isFlag) {
+                printf(" F ");
+            }
+            else {
+                printf(" . ");
+            }
+        }
+        printf("\n");
+    }
+}
+
+// Получить клетку по координатам
+Cell* getCell(Board* board, int x, int y) {
+    if (x >= 0 && x < board->width && y >= 0 && y < board->height) {
+        return &board->cells[y * board->width + x];
+    }
+    return NULL;
+}
+
+// Уменьшить счетчик безопасных клеток
+void decreaseSafeCells(Board* board) {
+    if (board->safeCellsLeft > 0) {
+        board->safeCellsLeft--;
+    }
+}
+
+// Проверить победу
+int isGameWon(Board* board) {
+    return board->safeCellsLeft == 0;
+}
+
+// Расставить бомбы
+void placeBombs(Board* board, int firstX, int firstY) {
+    int bombsPlaced = 0;
+    while (bombsPlaced < board->totalBombs) {
+        int x = rand() % board->width;
+        int y = rand() % board->height;
+
+        if ((abs(x - firstX) <= 1 && abs(y - firstY) <= 1) ||
+            getCell(board, x, y)->isBomb) {
+            continue;
+        }
+
+        setBomb(getCell(board, x, y));
+        bombsPlaced++;
+    }
+}
+
+// Посчитать бомбы вокруг
+void calculateBombCounts(Board* board) {
+    for (int y = 0; y < board->height; y++) {
+        for (int x = 0; x < board->width; x++) {
+            Cell* cell = getCell(board, x, y);
+            if (!cell->isBomb) {
+                int count = 0;
+                for (int dy = -1; dy <= 1; dy++) {
+                    for (int dx = -1; dx <= 1; dx++) {
+                        if (dx == 0 && dy == 0) continue;
+                        Cell* neighbor = getCell(board, x + dx, y + dy);
+                        if (neighbor && neighbor->isBomb) {
+                            count++;
+                        }
+                    }
+                }
+                cell->countBomb = count;
+            }
+        }
+    }
+}
+
+
 // Создание игры
 Game* createGame(Board* board, Player* player) {
     Game* game = (Game*)malloc(sizeof(Game));
