@@ -222,6 +222,40 @@ void calculateBombCounts(Board* board) {
     }
 }
 
+// Создание игрока
+Player* createPlayer(const char* name) {
+    Player* player = (Player*)malloc(sizeof(Player));
+    strcpy(player->name, name);
+    player->timeSpent = 0;
+    player->openedCells = 0;
+    player->mistakes = 0;
+    player->bestTime = 0;
+    return player;
+}
+
+// Вывод информации об игроке
+void printPlayer(Player* player) {
+    printf("Игрок: %s\n", player->name);
+    printf("Время: %d сек, Открыто: %d, Ошибок: %d\n",
+        player->timeSpent, player->openedCells, player->mistakes);
+}
+
+// Добавить ошибку
+void addMistake(Player* player) {
+    player->mistakes++;
+}
+
+// Добавить открытую клетку
+void addOpenedCell(Player* player) {
+    player->openedCells++;
+}
+
+// Обновить лучшее время
+void updateBestTime(Player* player) {
+    if (player->bestTime == 0 || player->timeSpent < player->bestTime) {
+        player->bestTime = player->timeSpent;
+    }
+}
 
 // Создание игры
 Game* createGame(Board* board, Player* player) {
