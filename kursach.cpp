@@ -298,3 +298,57 @@ int isGameRunning(Game* game) {
 int getGameTime(Game* game) {
     return (int)(time(NULL) - game->startTime);
 }
+
+// Создание настроек
+Settings* createSettings() {
+    Settings* settings = (Settings*)malloc(sizeof(Settings));
+    settings->autoBombs = 1;
+    settings->difficulty = 0;
+    return settings;
+}
+
+// Вывод настроек
+void printSettings(Settings* settings) {
+    printf("=== НАСТРОЙКИ ===\n");
+    printf("Авторасстановка бомб: %s\n", settings->autoBombs ? "Вкл" : "Выкл");
+    printf("Сложность: ");
+    switch (settings->difficulty) {
+    case 0: printf("Легко\n"); break;
+    case 1: printf("Средне\n"); break;
+    case 2: printf("Сложно\n"); break;
+    }
+}
+
+// Создать поле по сложности
+Board* createBoardByDifficulty(Settings* settings) {
+    switch (settings->difficulty) {
+    case 0: return createBoard(9, 9, 10);
+    case 1: return createBoard(16, 16, 40);
+    case 2: return createBoard(30, 16, 99);
+    default: return createBoard(9, 9, 10);
+    }
+}
+
+// Создание логгера
+Logger* createLogger(const char* filename) {
+    Logger* logger = (Logger*)malloc(sizeof(Logger));
+    strcpy(logger->filename, filename);
+    logger->file = fopen(filename, "a");
+    return logger;
+}
+
+// Запись в лог
+void logMessage(Logger* logger, const char* message) {
+    if (logger->file) {
+        time_t now = time(NULL);
+        fprintf(logger->file, "[%s] %s\n", ctime(&now), message);
+        fflush(logger->file);
+    }
+}
+
+// Закрыть логгер
+void closeLogger(Logger* logger) {
+    if (logger->file) {
+        fclose(logger->file);
+    }
+}
