@@ -352,3 +352,40 @@ void closeLogger(Logger* logger) {
         fclose(logger->file);
     }
 }
+
+// Создание записи
+leaderboard* createLeaderboard(const char* name, int time, int width, int height, int bombs, int win) {
+    leaderboard* lb = (leaderboard*)malloc(sizeof(leaderboard));
+    strcpy(lb->name, name);
+    lb->time = time;
+    lb->width = width;
+    lb->height = height;
+    lb->bombs = bombs;
+    lb->win = win;
+    
+    time_t t = time(NULL);
+    struct tm* tm_info = localtime(&t);
+    lb->day = tm_info->tm_mday;
+    lb->month = tm_info->tm_mon + 1;
+    lb->age = tm_info->tm_year + 1900;
+    
+    return lb;
+}
+
+// Вывод записи
+void printLeaderboard(leaderboard* lb) {
+    printf("%s: %d сек, %dx%d, %s\n", 
+           lb->name, lb->time, lb->width, lb->height,
+           lb->win ? "ПОБЕДА" : "ПРОИГРЫШ");
+}
+
+// Сохранить запись
+void saveLeaderboard(leaderboard* lb, const char* filename) {
+    FILE* file = fopen(filename, "a");
+    if (file) {
+        fprintf(file, "%s,%d,%d,%d,%d,%d,%d,%d,%d\n",
+                lb->name, lb->time, lb->height, lb->width, lb->bombs,
+                lb->day, lb->month, lb->age, lb->win);
+        fclose(file);
+    }
+}
