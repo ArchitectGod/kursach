@@ -275,11 +275,14 @@ void printGame(Game* game) {
     case 1: printf("ПОБЕДА!\n"); break;
     case 2: printf("ПРОИГРЫШ\n"); break;
     }
+    printBoard(game->board);
+    printPlayer(game->player);
 }
 
 // Победа
 void winGame(Game* game) {
     game->state = 1;
+    updateBestTime(game->player);
 }
 
 // Проигрыш
