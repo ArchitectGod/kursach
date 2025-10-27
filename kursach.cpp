@@ -292,6 +292,46 @@ public:
 };
 
 
+class Leaderboard : public GameObject { //Класс таблицы лидеров
+private:
+    std::string name;
+    int time;
+    int height;
+    int width;
+    int bombs;
+    int day;
+    int month;
+    int age;
+    int win;
+
+public:
+    Leaderboard(const std::string& playerName, int t, int w, int h, int b, int victory) 
+        : name(playerName), time(t), width(w), height(h), bombs(b), win(victory) {
+        
+        time_t t_now = ::time(NULL);
+        struct tm* tm_info = localtime(&t_now);
+        day = tm_info->tm_mday;
+        month = tm_info->tm_mon + 1;
+        age = tm_info->tm_year + 1900;
+    }
+    
+    void print() const override {
+        printf("%s: %d сек, %dx%d, %s\n", name.c_str(), time, width, height, 
+               win ? "ПОБЕДА" : "ПРОИГРЫШ");
+    }
+    
+    void saveToFile(const std::string& filename) {
+        FILE* file = fopen(filename.c_str(), "a");
+        if (file) {
+            fprintf(file, "%s,%d,%d,%d,%d,%d,%d,%d,%d\n",
+                    name.c_str(), time, height, width, bombs,
+                    day, month, age, win);
+            fclose(file);
+        }
+    }
+};
+
+
 
 
 class Menu : public GameObject {         //Класс меню
@@ -824,3 +864,301 @@ public:
 
     void setEnabled(bool enable) { enabled = enable; }
 };
+
+
+class Theme : public GameObject {// Класс темы оформления
+private:
+    std::string name;
+    std::string cellClosed;
+    std::string cellOpen;
+    std::string bomb;
+
+public:
+    Theme(const std::string& themeName) : name(themeName) {
+         if (themeName == "classic") {
+             cellClosed = ".";
+             cellOpen = " ";
+             bomb = "*";
+        } else if (themeName == "modern") {
+             cellClosed = "■";
+             cellOpen = "□";
+             bomb = "💣";
+         }
+     }
+     
+     void print() const override {
+         printf("Тема: %s\n", name.c_str());
+         printf("Закрытая клетка: %s, Открытая клетка: %s, Бомба: %s\n", 
+                cellClosed.c_str(), cellOpen.c_str(), bomb.c_str());
+     }
+
+     std::string getCellClosed() const { return cellClosed; }
+     std::string getCellOpen() const { return cellOpen; }
+     std::string getBomb() const { return bomb; }
+};
+
+
+class HelpSystem : public GameObject { // Класс помощи
+public:
+     void print() const override {
+         printf("=== СИСТЕМА ПОМОЩИ ===\n");
+         printf("Цель игры: открыть все клетки без бомб\n");
+         printf("Управление:\n");
+         printf("- ЛКМ: открыть клетку\n");
+         printf("- ПКМ: поставить/убрать флаг\n");
+         printf("Цифры показывают количество бомб вокруг клетки\n");
+
+}
+
+     void showRules() {
+         print();
+     }
+
+     void showTips() {
+         printf("=== СОВЕТЫ ===\n");
+         printf("1. Начинайте с углов\n");
+         printf("2. Используйте флаги для отметки бомб\n");
+         printf("3. Анализируйте цифры для определения безопасных клеток\n");
+     }
+};
+
+
+class GameAnalyzer : public GameObject {// Класс анализатора игры
+public:
+    void print() const override {
+        printf("Анализатор игрового процесса\n");
+    }
+    
+    void analyzeBoard(const Board& board) {
+        int flaggedBombs = 0;
+        int totalBombs = board.getTotalBombs();
+        
+        // Здесь будет сложная логика анализа
+        printf("Анализ поля: бомб %d, безопасных клеток осталось: %d\n", 
+               totalBombs, board.getSafeCellsLeft());
+    }
+};
+
+
+class HighScore : public GameObject {// Класс рекордов
+private:
+    std::string playerName;
+    int score;
+    int time;
+    std::string difficulty;
+
+public:
+    HighScore(const std::string& name, int s, int t, const std::string& diff) 
+        : playerName(name), score(s), time(t), difficulty(diff) {}
+    
+    void print() const override {
+        printf("Рекорд: %s - %d очков, время: %d сек, сложность: %s\n", 
+               playerName.c_str(), score, time, difficulty.c_str());
+    }
+    
+    int getScore() const { return score; }
+};
+
+
+class HighScoreManager : public GameObject {// Класс менеджера рекордов
+private:
+    std::vector<HighScore> highScores;
+
+public:
+    void print() const override {
+        printf("=== ТАБЛИЦА РЕКОРДОВ ===\n");
+        for (size_t i = 0; i < highScores.size(); i++) {
+            printf("%zu. ", i + 1);
+            highScores[i].print();
+        }
+    }
+    
+    void addScore(const HighScore& score) {
+        highScores.push_back(score);
+        // Сортировка по убыванию очков
+        std::sort(highScores.begin(), highScores.end(), 
+                  [](const HighScore& a, const HighScore& b) {
+                      return a.getScore() > b.getScore();
+                  });
+        
+        // Ограничиваем размер таблицы
+        if (highScores.size() > 10) {
+            highScores.resize(10);
+        }
+    }
+};
+
+
+class HintSystem : public GameObject {// Класс системы подсказок
+private:
+    int hintsAvailable;
+
+public:
+    HintSystem() : hintsAvailable(3) {}
+    
+    void print() const override {
+        printf("Система подсказок, доступно подсказок: %d\n", hintsAvailable);
+    }
+    
+    Coordinate getHint(const Board& board) {
+        if (hintsAvailable > 0) {
+            hintsAvailable--;
+            
+            // Простая логика подсказки - находим безопасную клетку
+            for (int y = 0; y < board.getHeight(); y++) {
+                for (int x = 0; x < board.getWidth(); x++) {
+                    Cell* cell = const_cast<Board&>(board).getCell(x, y);
+                    if (cell && !cell->getIsOpen() && !cell->getIsBomb()) {
+                        printf("Подсказка: безопасная клетка [%d,%d]\n", x, y);
+                        return Coordinate(x, y);
+                    }
+                }
+            }
+        } else {
+            printf("Подсказки закончились!\n");
+        }
+        return Coordinate(-1, -1);
+    }
+};
+
+// Демонстрационная функция для показа работы всех классов
+void demonstrateAllClasses() {
+    printf("=== ДЕМОНСТРАЦИЯ ВСЕХ 35 КЛАССОВ ===\n\n");
+    
+    // Создаем экземпляры всех классов
+    Cell cell(5, 5);
+    Board board(8, 8, 10);
+    Player player("Тестовый игрок");
+    Game game(&board, &player);
+    Settings settings;
+    Logger logger("demo_log.txt");
+    Leaderboard leaderboard("Лидер", 120, 9, 9, 10, 1);
+    
+    Menu mainMenu("Главное меню");
+    mainMenu.addOption("Новая игра");
+    mainMenu.addOption("Загрузить игру");
+    mainMenu.addOption("Настройки");
+    mainMenu.addOption("Выход");
+
+Timer timer;
+    GameStats stats;
+    Coordinate coord(3, 3);
+    Bomb bomb(coord);
+    Flag flag(coord);
+    RandomGenerator randomGen;
+    Renderer renderer;
+    InputHandler inputHandler;
+    GameController gameController;
+    Validator validator;
+    GameFactory gameFactory;
+    ScoringSystem scoringSystem;
+    PlayerSession session(&player);
+    Notifier notifier;
+    Difficulty difficulty("Средний", 16, 16, 40);
+    PlayerProfile profile(&player);
+    Achievement achievement("Первый шаг", "Сыграйте первую игру");
+    AchievementSystem achievementSystem;
+    GameSave save("autosave1");
+    SaveManager saveManager;
+    SoundSystem soundSystem;
+    Theme theme("classic");
+    HelpSystem helpSystem;
+    GameAnalyzer analyzer;
+    HighScore highScore("Чемпион", 1500, 85, "Средний");
+    HighScoreManager highScoreManager;
+    HintSystem hintSystem;
+    
+    // Демонстрируем работу некоторых классов
+    printf("1. Демонстрация клетки:\n");
+    cell.print();
+    
+    printf("\n2. Демонстрация игрового поля:\n");
+    board.print();
+    
+    printf("\n3. Демонстрация игрока:\n");
+    player.print();
+    
+    printf("\n4. Демонстрация меню:\n");
+    mainMenu.print();
+    
+    printf("\n5. Демонстрация таймера:\n");
+    timer.start();
+    timer.print();
+    
+    printf("\n6. Демонстрация статистики:\n");
+    stats.addGame(true, 120);
+    stats.addGame(false, 85);
+    stats.print();
+    
+    printf("\n7. Демонстрация звуковой системы:\n");
+    soundSystem.playClickSound();
+    soundSystem.playWinSound();
+    
+    printf("\n8. Демонстрация системы помощи:\n");
+    helpSystem.showTips();
+    
+    printf("\n9. Демонстрация системы достижений:\n");
+    achievementSystem.print();
+    
+    printf("\n10. Демонстрация системы подсказок:\n");
+    hintSystem.print();
+    
+    printf("\n... и так далее для всех 35 классов\n");
+}
+
+int main() {
+    setlocale(LC_ALL, "Russian");
+    srand(time(NULL));
+
+    printf("=== ДЕМОНСТРАЦИЯ РАБОТЫ САПЕРА НА C++ ===\n\n");
+    
+    // Демонстрация работы всех классов
+    demonstrateAllClasses();
+    
+    // Простая демонстрация игрового процесса
+    printf("\n=== ПРОСТАЯ ДЕМОНСТРАЦИЯ ИГРОВОГО ПРОЦЕССА ===\n");
+    
+    // Создаем игру
+    GameFactory factory;
+    Game* demoGame = factory.createEasyGame("Демо-игрок");
+    
+    // Создаем контроллер и связываем с игрой
+    GameController controller;
+    controller.setGame(demoGame);
+    
+    // Показываем начальное состояние
+    printf("Начальное состояние игры:\n");
+    demoGame->print();
+    
+    // Симулируем несколько ходов
+    printf("\n--- Симуляция ходов ---\n");
+    
+    // Ход 1
+    Coordinate move1(0, 0);
+    printf("Ход 1: открываем клетку [0,0]\n");
+    controller.processMove(move1);
+    demoGame->print();
+    
+    // Ход 2  
+    Coordinate move2(1, 1);
+    printf("Ход 2: открываем клетку [1,1]\n");
+    controller.processMove(move2);
+    
+    // Обновляем время игрока
+    Player* demoPlayer = demoGame->getPlayer();
+    if (demoPlayer) {
+        demoPlayer->setTimeSpent(demoGame->getGameTime());
+    }
+    
+    printf("\nФинальное состояние:\n");
+    demoGame->print();
+    
+    // Очистка памяти
+    delete demoGame->getBoard();
+    delete demoGame->getPlayer();
+    delete demoGame;
+
+    printf("\n=== ДЕМОНСТРАЦИЯ ЗАВЕРШЕНА ===\n");
+
+    return 0;
+}
