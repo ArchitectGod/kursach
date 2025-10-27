@@ -1,628 +1,233 @@
-﻿#define  _CRT_SECURE_NO_WARNINGS
+﻿#define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <ctime>
 #include <locale.h>
+#include <vector>
+#include <string>
+#include <memory>
 
-typedef struct {
-    int isBomb; //1 yes or 0 no
-    int isOpen; //1 yes or 0 no
-    int isFlag; //1 yes or 0 no
-    int countBomb; //количество бомб вокруг
-    int coordinateX; //координата клетки по Х
-    int coordinateY; //координата клетки по У
-} Cell;
+class GameObject {     // Базовый класс
+public:
+    virtual ~GameObject() = default;
+    virtual void print() const = 0;
+};
 
-typedef struct {
-    int width;          // ширина поля
-    int height;         // высота поля
-    int totalBombs;     // общее количество бомб
-    int safeCellsLeft;  // количество закрытых безопасных клеток
-    Cell* cells;        // массив клеток
-} Board;
+class Cell : public GameObject {         // Класс клетки
+private:
+    int isBomb;
+    int isOpen;
+    int isFlag;
+    int countBomb;
+    int coordinateX;
+    int coordinateY;
 
-typedef struct {
-    char name[50];       // имя игрока (строка, максимум 49 символов + '\0')
-    int timeSpent;       // время игры в секундах
-    int openedCells;     // количество открытых клеток
-    int mistakes;        // число ошибок (например, неверные флаги или взрывы)
-    int bestTime;        // лучшая попытка (время в секундах, меньше — лучше)
-} Player;
-
-typedef struct {
-    Board* board;        // указатель на игровое поле
-    Player* player;      // указатель на игрока
-    int state;           // 0 - RUNNING, 1 - WON, 2 - LOST
-    time_t startTime;    // время начала
-    time_t pauseTime;    // время паузы
-} Game;
-
-typedef struct {
-    int autoBombs;  // 1 - автоматически расставлять бомбы
-    int sounds;     // 1 - звуки включены
-    int difficulty; // 0 - легко, 1 - средне, 2 - сложно
-} Settings;
-
-typedef struct {
-    char filename[100]; //имя файла для записи
-    FILE* file; //указатель на файл
-} Logger;
-
-typedef struct {
-    char name[50];//Имя
-    int time; //Потраченное время
-    int height;//Высота поля
-    int width;//Ширина поля
-    int bombs;//Количество бомб
-    int day;//день
-    int month;//Месяц
-    int age;//Год
-    int win;//Победа ли 1- да 2 - взрыв
-}leaderboard;
-
-// Создание новой клетки
-Cell createCell(int x, int y) {
-    Cell cell;
-    cell.isBomb = 0;
-    cell.isOpen = 0;
-    cell.isFlag = 0;
-    cell.countBomb = 0;
-    cell.coordinateX = x;
-    cell.coordinateY = y;
-    return cell;
-}
-
-// Вывод информации о клетке
-void printCell(Cell cell) {
-    printf("Клетка [%d,%d]: ", cell.coordinateX, cell.coordinateY);
-    if (cell.isOpen) {
-        if (cell.isBomb) {
-            printf("Бомба");
-        }
-        else {
-            printf("Бомб вокруг: %d", cell.countBomb);
-        }
-    }
-    else if (cell.isFlag) {
-        printf("Флаг");
-    }
-    else {
-        printf("Закрыта");
-    }
-    printf("\n");
-}
-
-// Открыть клетку
-void openCell(Cell* cell) {
-    cell->isOpen = 1;
-    cell->isFlag = 0;
-}
-
-// Поставить/убрать флаг
-void toggleFlag(Cell* cell) {
-    if (!cell->isOpen) {
-        cell->isFlag = !cell->isFlag;
-    }
-}
-
-// Установить бомбу
-void setBomb(Cell* cell) {
-    cell->isBomb = 1;
-}
-
-
-// Создание поля
-Board* createBoard(int width, int height, int totalBombs) {
-    Board* board = (Board*)malloc(sizeof(Board));
-    board->width = width;
-    board->height = height;
-    board->totalBombs = totalBombs;
-    board->safeCellsLeft = width * height - totalBombs;
-    board->cells = (Cell*)malloc(width * height * sizeof(Cell));
-
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
-            board->cells[y * width + x] = createCell(x, y);
-        }
-    }
-    return board;
-}
-
-// Вывод поля
-void printBoard(Board* board) {
-    printf("   ");
-    for (int x = 0; x < board->width; x++) {
-        printf("%2d ", x);
-    }
-    printf("\n");
-
-    for (int y = 0; y < board->height; y++) {
-        printf("%2d ", y);
-        for (int x = 0; x < board->width; x++) {
-            Cell cell = board->cells[y * board->width + x];
-            if (cell.isOpen) {
-                if (cell.isBomb) {
-                    printf(" * ");
-                }
-                else {
-                    printf(" %d ", cell.countBomb);
-                }
+public:
+    Cell(int x = 0, int y = 0) : isBomb(0), isOpen(0), isFlag(0), countBomb(0), coordinateX(x), coordinateY(y) {}
+    
+    // Геттеры
+    int getIsBomb() const { return isBomb; }
+    int getIsOpen() const { return isOpen; }
+    int getIsFlag() const { return isFlag; }
+    int getCountBomb() const { return countBomb; }
+    int getX() const { return coordinateX; }
+    int getY() const { return coordinateY; }
+    
+    // Сеттеры
+    void setIsBomb(int value) { isBomb = value; }
+    void setIsOpen(int value) { isOpen = value; }
+    void setIsFlag(int value) { isFlag = value; }
+    void setCountBomb(int value) { countBomb = value; }
+    
+    void print() const override {
+        printf("Клетка [%d,%d]: ", coordinateX, coordinateY);
+        if (isOpen) {
+            if (isBomb) {
+                printf("Бомба");
+            } else {
+                printf("Бомб вокруг: %d", countBomb);
             }
-            else if (cell.isFlag) {
-                printf(" F ");
-            }
-            else {
-                printf(" . ");
-            }
+        } else if (isFlag) {
+            printf("Флаг");
+        } else {
+            printf("Закрыта");
         }
         printf("\n");
     }
-}
-
-// Получить клетку по координатам
-Cell* getCell(Board* board, int x, int y) {
-    if (x >= 0 && x < board->width && y >= 0 && y < board->height) {
-        return &board->cells[y * board->width + x];
+    
+    void open() {
+        isOpen = 1;
+        isFlag = 0;
     }
-    return NULL;
-}
-
-// Уменьшить счетчик безопасных клеток
-void decreaseSafeCells(Board* board) {
-    if (board->safeCellsLeft > 0) {
-        board->safeCellsLeft--;
-    }
-}
-
-// Проверить победу
-int isGameWon(Board* board) {
-    return board->safeCellsLeft == 0;
-}
-
-// Расставить бомбы
-void placeBombs(Board* board, int firstX, int firstY) {
-    int bombsPlaced = 0;
-    while (bombsPlaced < board->totalBombs) {
-        int x = rand() % board->width;
-        int y = rand() % board->height;
-
-        if ((abs(x - firstX) <= 1 && abs(y - firstY) <= 1) ||
-            getCell(board, x, y)->isBomb) {
-            continue;
-        }
-
-        setBomb(getCell(board, x, y));
-        bombsPlaced++;
-    }
-}
-
-// Посчитать бомбы вокруг
-void calculateBombCounts(Board* board) {
-    for (int y = 0; y < board->height; y++) {
-        for (int x = 0; x < board->width; x++) {
-            Cell* cell = getCell(board, x, y);
-            if (!cell->isBomb) {
-                int count = 0;
-                for (int dy = -1; dy <= 1; dy++) {
-                    for (int dx = -1; dx <= 1; dx++) {
-                        if (dx == 0 && dy == 0) continue;
-                        Cell* neighbor = getCell(board, x + dx, y + dy);
-                        if (neighbor && neighbor->isBomb) {
-                            count++;
-                        }
-                    }
-                }
-                cell->countBomb = count;
-            }
+    
+    void toggleFlag() {
+        if (!isOpen) {
+            isFlag = !isFlag;
         }
     }
-}
-
-// Создание игрока
-Player* createPlayer(const char* name) {
-    Player* player = (Player*)malloc(sizeof(Player));
-    strcpy(player->name, name);
-    player->timeSpent = 0;
-    player->openedCells = 0;
-    player->mistakes = 0;
-    player->bestTime = 0;
-    return player;
-}
-
-// Вывод информации об игроке
-void printPlayer(Player* player) {
-    printf("Игрок: %s\n", player->name);
-    printf("Время: %d сек, Открыто: %d, Ошибок: %d\n",
-        player->timeSpent, player->openedCells, player->mistakes);
-}
-
-// Добавить ошибку
-void addMistake(Player* player) {
-    player->mistakes++;
-}
-
-// Добавить открытую клетку
-void addOpenedCell(Player* player) {
-    player->openedCells++;
-}
-
-// Обновить лучшее время
-void updateBestTime(Player* player) {
-    if (player->bestTime == 0 || player->timeSpent < player->bestTime) {
-        player->bestTime = player->timeSpent;
+    
+    void setBomb() {
+        isBomb = 1;
     }
-}
+};
 
-// Создание игры
-Game* createGame(Board* board, Player* player) {
-    Game* game = (Game*)malloc(sizeof(Game));
-    game->board = board;
-    game->player = player;
-    game->state = 0;
-    game->startTime = time(NULL);
-    game->pauseTime = 0;
-    return game;
-}
+class Settings : public GameObject {          //Класс настроек
+private:
+    int autoBombs;
+    int sounds;
+    int difficulty;
 
-// Вывод состояния игры
-void printGame(Game* game) {
-    printf("=== ИГРА ===\n");
-    printf("Статус: ");
-    switch (game->state) {
-    case 0: printf("В процессе\n"); break;
-    case 1: printf("ПОБЕДА!\n"); break;
-    case 2: printf("ПРОИГРЫШ\n"); break;
-    }
-    printBoard(game->board);
-    printPlayer(game->player);
-}
-
-// Победа
-void winGame(Game* game) {
-    game->state = 1;
-    updateBestTime(game->player);
-}
-
-// Проигрыш
-void loseGame(Game* game) {
-    game->state = 2;
-}
-
-// Проверить идет ли игра
-int isGameRunning(Game* game) {
-    return game->state == 0;
-}
-
-// Получить время игры
-int getGameTime(Game* game) {
-    return (int)(time(NULL) - game->startTime);
-}
-
-// Создание настроек
-Settings* createSettings() {
-    Settings* settings = (Settings*)malloc(sizeof(Settings));
-    settings->autoBombs = 1;
-    settings->difficulty = 0;
-    return settings;
-}
-
-// Вывод настроек
-void printSettings(Settings* settings) {
-    printf("=== НАСТРОЙКИ ===\n");
-    printf("Авторасстановка бомб: %s\n", settings->autoBombs ? "Вкл" : "Выкл");
-    printf("Сложность: ");
-    switch (settings->difficulty) {
-    case 0: printf("Легко\n"); break;
-    case 1: printf("Средне\n"); break;
-    case 2: printf("Сложно\n"); break;
-    }
-}
-
-// Создать поле по сложности
-Board* createBoardByDifficulty(Settings* settings) {
-    switch (settings->difficulty) {
-    case 0: return createBoard(9, 9, 10);
-    case 1: return createBoard(16, 16, 40);
-    case 2: return createBoard(30, 16, 99);
-    default: return createBoard(9, 9, 10);
-    }
-}
-
-// Создание логгера
-Logger* createLogger(const char* filename) {
-    Logger* logger = (Logger*)malloc(sizeof(Logger));
-    strcpy(logger->filename, filename);
-    logger->file = fopen(filename, "a");
-    return logger;
-}
-
-// Запись в лог
-void logMessage(Logger* logger, const char* message) {
-    if (logger->file) {
-        time_t now = time(NULL);
-        fprintf(logger->file, "[%s] %s\n", ctime(&now), message);
-        fflush(logger->file);
-    }
-}
-
-// Закрыть логгер
-void closeLogger(Logger* logger) {
-    if (logger->file) {
-        fclose(logger->file);
-    }
-}
-
-// Создание записи
-leaderboard* createLeaderboard(const char* name, int time, int width, int height, int bombs, int win) {
-    leaderboard* lb = (leaderboard*)malloc(sizeof(leaderboard));
-    strcpy(lb->name, name);
-    lb->time = time;
-    lb->width = width;
-    lb->height = height;
-    lb->bombs = bombs;
-    lb->win = win;
-
-    time_t t = ::time(NULL);
-    struct tm* tm_info = localtime(&t);
-    lb->day = tm_info->tm_mday;
-    lb->month = tm_info->tm_mon + 1;
-    lb->age = tm_info->tm_year + 1900;
-
-    return lb;
-}
-
-// Вывод записи
-void printLeaderboard(leaderboard* lb) {
-    printf("%s: %d сек, %dx%d, %s\n",
-        lb->name, lb->time, lb->width, lb->height,
-        lb->win ? "ПОБЕДА" : "ПРОИГРЫШ");
-}
-
-// Сохранить запись
-void saveLeaderboard(leaderboard* lb, const char* filename) {
-    FILE* file = fopen(filename, "a");
-    if (file) {
-        fprintf(file, "%s,%d,%d,%d,%d,%d,%d,%d,%d\n",
-            lb->name, lb->time, lb->height, lb->width, lb->bombs,
-            lb->day, lb->month, lb->age, lb->win);
-        fclose(file);
-    }
-}
-
-
-int main()
-{
-    setlocale(LC_ALL, "Russian");
-    srand(time(NULL));
-
-    printf("=== ДЕМОНСТРАЦИЯ РАБОТЫ САПЕРА ===\n\n");
-
-    // 1. Демонстрация работы с клетками
-    printf("1. ДЕМОНСТРАЦИЯ КЛЕТОК:\n");
-    Cell cell1 = createCell(0, 0);
-    Cell cell2 = createCell(1, 1);
-
-    printf("Созданы клетки:\n");
-    printCell(cell1);
-    printCell(cell2);
-
-    // Открываем первую клетку
-    openCell(&cell1);
-    printf("\nПосле открытия первой клетки:\n");
-    printCell(cell1);
-
-    // Ставим флаг на вторую клетку
-    toggleFlag(&cell2);
-    printf("После установки флага на вторую клетку:\n");
-    printCell(cell2);
-
-    // Убираем флаг
-    toggleFlag(&cell2);
-    printf("После снятия флага:\n");
-    printCell(cell2);
-
-    // 2. Демонстрация работы с полем
-    printf("\n2. ДЕМОНСТРАЦИЯ ИГРОВОГО ПОЛЯ:\n");
-    Board* board = createBoard(5, 5, 3);
-
-    // Расставляем бомбы вручную для демонстрации
-    setBomb(getCell(board, 1, 1));
-    setBomb(getCell(board, 3, 2));
-    setBomb(getCell(board, 4, 4));
-
-    // Пересчитываем количество бомб вокруг
-    calculateBombCounts(board);
-
-    printf("Поле с бомбами (показаны все клетки):\n");
-    for (int y = 0; y < board->height; y++) {
-        for (int x = 0; x < board->width; x++) {
-            Cell* cell = getCell(board, x, y);
-            if (cell->isBomb) {
-                printf(" * ");
-            }
-            else {
-                printf(" %d ", cell->countBomb);
-            }
+public:
+    Settings() : autoBombs(1), sounds(1), difficulty(0) {}
+    
+    void print() const override {
+        printf("=== НАСТРОЙКИ ===\n");
+        printf("Авторасстановка бомб: %s\n", autoBombs ? "Вкл" : "Выкл");
+        printf("Сложность: ");
+        switch (difficulty) {
+            case 0: printf("Легко\n"); break;
+            case 1: printf("Средне\n"); break;
+            case 2: printf("Сложно\n"); break;
         }
-        printf("\n");
     }
+    
+    // Геттеры и сеттеры
+    int getAutoBombs() const { return autoBombs; }
+    int getSounds() const { return sounds; }
+    int getDifficulty() const { return difficulty; }
+    
+    void setAutoBombs(int value) { autoBombs = value; }
+    void setSounds(int value) { sounds = value; }
+    void setDifficulty(int value) { difficulty = value; }
+};
 
-    // 3. Демонстрация игрового процесса
-    printf("\n3. ДЕМОНСТРАЦИЯ ИГРОВОГО ПРОЦЕССА:\n");
+class Menu : public GameObject {         //Класс меню
+private:
+    std::string title;
+    std::vector<std::string> options;
 
-    // Создаем игрока
-    Player* player = createPlayer("Игрок Демо");
-
-    // Создаем игру
-    Game* game = createGame(board, player);
-
-    printf("Начальное состояние игры:\n");
-    printGame(game);
-    printPlayer(player);
-
-    // Симулируем несколько ходов
-    printf("\n--- Симуляция ходов ---\n");
-
-    // Открываем безопасную клетку
-    Cell* safeCell = getCell(board, 0, 0);
-    if (!safeCell->isBomb) {
-        openCell(safeCell);
-        decreaseSafeCells(board);
-        addOpenedCell(player);
-        printf("Открыли клетку [0,0]\n");
+public:
+    Menu(const std::string& menuTitle) : title(menuTitle) {}
+    
+    void addOption(const std::string& option) {
+        options.push_back(option);
     }
-
-    // Ставим флаг на клетку с бомбой
-    Cell* bombCell = getCell(board, 1, 1);
-    toggleFlag(bombCell);
-    printf("Поставили флаг на клетку [1,1] (бомба)\n");
-
-    // Открываем клетку с бомбой (ошибка)
-    Cell* wrongCell = getCell(board, 3, 2);
-    if (wrongCell->isBomb) {
-        addMistake(player);
-        printf("ОШИБКА: попытка открыть бомбу в [3,2]\n");
-        loseGame(game);
-    }
-
-    // Обновляем время игры
-    player->timeSpent = getGameTime(game);
-
-    printf("\nФинальное состояние:\n");
-    printGame(game);
-    printPlayer(player);
-
-    // 4. Демонстрация настроек
-    printf("\n4. ДЕМОНСТРАЦИЯ НАСТРОЕК:\n");
-    Settings* settings = createSettings();
-    printSettings(settings);
-
-    // Меняем настройки
-    settings->difficulty = 1;
-    settings->autoBombs = 0;
-    printf("\nПосле изменения настроек:\n");
-    printSettings(settings);
-
-    // Создаем поле по сложности
-    Board* difficultyBoard = createBoardByDifficulty(settings);
-    printf("\nПоле для средней сложности: %dx%d, бомб: %d\n",
-        difficultyBoard->width, difficultyBoard->height, difficultyBoard->totalBombs);
-
-    // 5. Демонстрация логгера
-    printf("\n5. ДЕМОНСТРАЦИЯ ЛОГГЕРА:\n");
-    Logger* logger = createLogger("game_log.txt");
-
-    if (logger->file) {
-        logMessage(logger, "Начало демонстрационной игры");
-        logMessage(logger, "Игрок совершил ход");
-        logMessage(logger, "Игрок подорвался на бомбе");
-        logMessage(logger, "Конец демонстрационной игры");
-        printf("Логи записаны в файл: %s\n", logger->filename);
-    }
-    else {
-        printf("Ошибка открытия файла лога!\n");
-    }
-
-    // 6. Демонстрация таблицы лидеров
-    printf("\n6. ДЕМОНСТРАЦИЯ ТАБЛИЦЫ ЛИДЕРОВ:\n");
-    leaderboard* record = createLeaderboard("Демо Игрок", 120, 9, 9, 10, 1);
-
-    printf("Запись в таблице лидеров:\n");
-    printLeaderboard(record);
-    printf("Полная информация: %s, время: %d сек, поле: %dx%d, бомб: %d, дата: %d.%d.%d, результат: %s\n",
-        record->name, record->time, record->width, record->height, record->bombs,
-        record->day, record->month, record->age, record->win == 1 ? "ПОБЕДА" : "ПОРАЖЕНИЕ");
-
-    // Сохраняем запись в файл
-    saveLeaderboard(record, "leaderboard.txt");
-    printf("Запись сохранена в leaderboard.txt\n");
-
-    // 7. Демонстрация автоматической расстановки бомб
-    printf("\n7. ДЕМОНСТРАЦИЯ АВТОРАССТАНОВКИ БОМБ:\n");
-    Board* autoBoard = createBoard(8, 8, 5);
-
-    // Первый ход в центре
-    int firstX = 4, firstY = 4;
-    placeBombs(autoBoard, firstX, firstY);
-    calculateBombCounts(autoBoard);
-
-    printf("Поле после автоматической расстановки бомб (первый ход в [4,4]):\n");
-    printf("Бомбы расположены (X - бомба, S - стартовая позиция):\n");
-    for (int y = 0; y < autoBoard->height; y++) {
-        for (int x = 0; x < autoBoard->width; x++) {
-            Cell* cell = getCell(autoBoard, x, y);
-            if (cell->isBomb) {
-                printf(" X ");
-            }
-            else if (x == firstX && y == firstY) {
-                printf(" S "); // стартовая позиция
-            }
-            else {
-                printf(" . ");
-            }
+    
+    void print() const override {
+        printf("=== %s ===\n", title.c_str());
+        for (size_t i = 0; i < options.size(); i++) {
+            printf("%zu. %s\n", i + 1, options[i].c_str());
         }
-        printf("\n");
     }
-
-    // 8. Демонстрация открытия области
-    printf("\n8. ДЕМОНСТРАЦИЯ ОТКРЫТИЯ ОБЛАСТИ:\n");
-
-    // Создаем новое поле для демонстрации
-    Board* areaBoard = createBoard(6, 6, 2);
-    setBomb(getCell(areaBoard, 5, 5));
-    setBomb(getCell(areaBoard, 0, 5));
-    calculateBombCounts(areaBoard);
-
-    printf("Поле до открытия области:\n");
-    printBoard(areaBoard);
-
-    // Открываем область из угла
-    Cell* startCell = getCell(areaBoard, 0, 0);
-    if (!startCell->isBomb) {
-        openCell(startCell);
-        decreaseSafeCells(areaBoard);
+    
+    int getChoice() const {
+        int choice;
+        printf("Выберите вариант: ");
+        scanf("%d", &choice);
+        return choice;
     }
+};
 
-    printf("\nПоле после открытия клетки [0,0]:\n");
-    printBoard(areaBoard);
+class Timer : public GameObject {          // Класс счетчика времени
+private:
+    time_t startTime;
+    time_t pausedTime;
+    bool isRunning;
 
-    // 9. Проверка условий победы
-    printf("\n9. ПРОВЕРКА УСЛОВИЙ ПОБЕДЫ:\n");
-    printf("Безопасных клеток осталось: %d\n", board->safeCellsLeft);
-    printf("Игра выиграна: %s\n", isGameWon(board) ? "ДА" : "НЕТ");
-    printf("Игра идет: %s\n", isGameRunning(game) ? "ДА" : "НЕТ");
+public:
+    Timer() : startTime(0), pausedTime(0), isRunning(false) {}
+    
+    void start() {
+        startTime = time(NULL);
+        isRunning = true;
+    }
+    
+    void pause() {
+        if (isRunning) {
+            pausedTime = time(NULL);
+            isRunning = false;
+        }
+    }
+    
+    void resume() {
+        if (!isRunning) {
+            startTime += (time(NULL) - pausedTime);
+            isRunning = true;
+        }
+    }
+    
+    int getElapsedTime() const {
+        if (isRunning) {
+            return (int)(time(NULL) - startTime);
+        }
+        return (int)(pausedTime - startTime);
+    }
+    
+    void print() const override {
+        printf("Таймер: %d секунд, статус: %s\n", getElapsedTime(), isRunning ? "работает" : "на паузе");
+    }
+};
 
-    // 10. Обновление лучшего времени
-    printf("\n10. ОБНОВЛЕНИЕ ЛУЧШЕГО ВРЕМЕНИ:\n");
-    printf("Лучшее время до: %d\n", player->bestTime);
-    updateBestTime(player);
-    printf("Лучшее время после: %d\n", player->bestTime);
+class Coordinate : public GameObject {      //Класс координат
+private:
+    int x;
+    int y;
 
-    // Симулируем лучший результат
-    player->timeSpent = 60;
-    updateBestTime(player);
-    printf("Лучшее время после улучшения: %d\n", player->bestTime);
+public:
+    Coordinate(int xCoord = 0, int yCoord = 0) : x(xCoord), y(yCoord) {}
+    
+    void print() const override {
+        printf("Координаты: (%d, %d)\n", x, y);
+    }
+    
+    int getX() const { return x; }
+    int getY() const { return y; }
+    void setX(int newX) { x = newX; }
+    void setY(int newY) { y = newY; }
+};
 
-    // Очистка памяти
-    free(board->cells);
-    free(board);
-    free(difficultyBoard->cells);
-    free(difficultyBoard);
-    free(autoBoard->cells);
-    free(autoBoard);
-    free(areaBoard->cells);
-    free(areaBoard);
-    free(player);
-    free(game);
-    free(settings);
-    closeLogger(logger);
-    free(logger);
-    free(record);
+class RandomGenerator : public GameObject {         //Класс генератора случайных чисел
+private:
+    int seed;
 
-    printf("\n=== ДЕМОНСТРАЦИЯ ЗАВЕРШЕНА ===\n");
+public:
+    RandomGenerator() {
+        seed = time(NULL);
+        srand(seed);
+    }
+    
+    RandomGenerator(int s) : seed(s) {
+        srand(seed);
+    }
+    
+    int getRandom(int min, int max) {
+        return min + rand() % (max - min + 1);
+    }
+    
+    void print() const override {
+        printf("Генератор случайных чисел, seed: %d\n", seed);
+    }
+};
 
-    return 0;
-}
+class Difficulty : public GameObject {          //Класс сложности
+private:
+    std::string level;
+    int width;
+    int height;
+    int bombs;
 
+public:
+    Difficulty(const std::string& lvl, int w, int h, int b) : level(lvl), width(w), height(h), bombs(b) {}
+    
+    void print() const override {
+        printf("Уровень сложности: %s (%dx%d, %d бомб)\n", level.c_str(), width, height, bombs);
+    }
+    
+    // Геттеры
+    std::string getLevel() const { return level; }
+    int getWidth() const { return width; }
+    int getHeight() const { return height; }
+    int getBombs() const { return bombs; }
+};
