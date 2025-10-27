@@ -73,7 +73,118 @@ public:
     }
 };
 
-class Settings : public GameObject {          //Класс настроек
+
+
+class Board : public GameObject {         // Класс игрового поля
+private:
+    int width;
+    int height;
+    int totalBombs;
+    int safeCellsLeft;
+    std::vector<Cell> cells;
+
+public:
+    Board(int w, int h, int bombs) : width(w), height(h), totalBombs(bombs), safeCellsLeft(w* h - bombs) {
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                cells.emplace_back(x, y);
+            }
+        }
+    }
+
+    void print() const override {
+        printf(" ");
+        for (int x = 0; x < width; x++) {
+            printf("%2d ", x);
+        }
+        printf("\n");
+
+        for (int y = 0; y < height; y++) {
+            printf("%2d ", y);
+            for (int x = 0; x < width; x++) {
+                const Cell& cell = cells[y * width + x];
+                if (cell.getIsOpen()) {
+                    if (cell.getIsBomb()) {
+                        printf(" * ");
+                    }
+                    else {
+                        printf(" %d ", cell.getCountBomb());
+                    }
+                }
+                else if (cell.getIsFlag()) {
+                    printf(" F ");
+                }
+                else {
+                    printf(" . ");
+                }
+            }
+            printf("\n");
+        }
+    }
+
+    Cell* getCell(int x, int y) {
+        if (x >= 0 && x < width && y >= 0 && y < height) {
+            return &cells[y * width + x];
+        }
+        return nullptr;
+    }
+
+    void decreaseSafeCells() {
+        if (safeCellsLeft > 0) {
+            safeCellsLeft--;
+        }
+    }
+
+    bool isGameWon() const {
+        return safeCellsLeft == 0;
+    }
+
+    // Геттеры
+    int getWidth() const { return width; }
+    int getHeight() const { return height; }
+    int getTotalBombs() const { return totalBombs; }
+    int getSafeCellsLeft() const { return safeCellsLeft; }
+};
+
+class Player : public GameObject {         //Класс игрока
+private:
+    std::string name;
+    int timeSpent;
+    int openedCells;
+    int mistakes;
+    int bestTime;
+
+public:
+    Player(const std::string& playerName = "") : name(playerName), timeSpent(0), openedCells(0), mistakes(0), bestTime(0) {}
+
+    void print() const override {
+        printf("Игрок: %s\n", name.c_str());
+        printf("Время: %d сек, Открыто: %d, Ошибок: %d\n", timeSpent, openedCells, mistakes);
+    }
+
+    void addMistake() { mistakes++; }
+    void addOpenedCell() { openedCells++; }
+
+    void updateBestTime() {
+        if (bestTime == 0 || timeSpent < bestTime) {
+            bestTime = timeSpent;
+        }
+    }
+
+    // Геттеры и сеттеры
+    std::string getName() const { return name; }
+    int getTimeSpent() const { return timeSpent; }
+    int getOpenedCells() const { return openedCells; }
+    int getMistakes() const { return mistakes; }
+    int getBestTime() const { return bestTime; }
+
+    void setTimeSpent(int time) { timeSpent = time; }
+    void setName(const std::string& newName) { name = newName; }
+};
+
+
+
+class Settings : public GameObject {         //Класс настроек
 private:
     int autoBombs;
     int sounds;
@@ -130,7 +241,7 @@ public:
     }
 };
 
-class Timer : public GameObject {          // Класс счетчика времени
+class Timer : public GameObject {         // Класс счетчика времени
 private:
     time_t startTime;
     time_t pausedTime;
@@ -170,7 +281,36 @@ public:
     }
 };
 
-class Coordinate : public GameObject {      //Класс координат
+
+class GameStats : public GameObject {         // Класс статистики игры
+private:
+    int gamesPlayed;
+    int gamesWon;
+    int totalTime;
+    int bestTime;
+
+public:
+    GameStats() : gamesPlayed(0), gamesWon(0), totalTime(0), bestTime(0) {}
+
+    void addGame(bool won, int time) {
+        gamesPlayed++;
+        if (won) gamesWon++;
+        totalTime += time;
+        if (won && (time < bestTime || bestTime == 0)) {
+            bestTime = time;
+        }
+    }
+
+    void print() const override {
+        printf("=== СТАТИСТИКА ===\n");
+        printf("Игр сыграно: %d\n", gamesPlayed);
+        printf("Побед: %d\n", gamesWon);
+        printf("Лучшее время: %d сек\n", bestTime);
+        printf("Среднее время: %.1f сек\n", gamesPlayed > 0 ? (float)totalTime / gamesPlayed : 0);
+    }
+};
+
+class Coordinate : public GameObject {         //Класс координат
 private:
     int x;
     int y;
@@ -186,6 +326,49 @@ public:
     int getY() const { return y; }
     void setX(int newX) { x = newX; }
     void setY(int newY) { y = newY; }
+};
+
+
+// 12. Класс бомбы
+class Bomb : public GameObject {
+private:
+    Coordinate position;
+    bool exploded;
+
+public:
+    Bomb(const Coordinate& pos) : position(pos), exploded(false) {}
+
+    void explode() {
+        exploded = true;
+    }
+
+    void print() const override {
+        printf("Бомба в позиции (%d, %d), состояние: %s\n",
+            position.getX(), position.getY(), exploded ? "взорвана" : "не взорвана");
+    }
+
+    bool isExploded() const { return exploded; }
+    Coordinate getPosition() const { return position; }
+};
+
+
+class Flag : public GameObject {         //Класс флага
+private:
+    Coordinate position;
+    bool isPlaced;
+
+public:
+    Flag(const Coordinate& pos) : position(pos), isPlaced(false) {}
+
+    void place() { isPlaced = true; }
+    void remove() { isPlaced = false; }
+
+    void print() const override {
+        printf("Флаг в позиции (%d, %d), состояние: %s\n",
+            position.getX(), position.getY(), isPlaced ? "установлен" : "не установлен");
+    }
+
+    bool getIsPlaced() const { return isPlaced; }
 };
 
 class RandomGenerator : public GameObject {         //Класс генератора случайных чисел
@@ -211,6 +394,43 @@ public:
     }
 };
 
+class Renderer : public GameObject {         //Класс отрисовщика
+public:
+    void print() const override {
+        printf("Рендерер для отображения игры\n");
+    }
+
+    void renderBoard(const Board& board) {
+        board.print();
+    }
+
+    void renderPlayer(const Player& player) {
+        player.print();
+    }
+};
+
+
+class InputHandler : public GameObject {         //Класс ввода пользователя
+public:
+    void print() const override {
+        printf("Обработчик ввода пользователя\n");
+    }
+
+    Coordinate getCellCoordinates() {
+        int x, y;
+        printf("Введите координаты X Y: ");
+        scanf("%d %d", &x, &y);
+        return Coordinate(x, y);
+    }
+
+    std::string getPlayerName() {
+        std::string name;
+        printf("Введите имя игрока: ");
+        char buffer[50];
+        scanf("%49s", buffer);
+        return std::string(buffer);
+    }
+};
 class Difficulty : public GameObject {          //Класс сложности
 private:
     std::string level;
