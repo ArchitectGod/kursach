@@ -182,7 +182,54 @@ public:
     void setName(const std::string& newName) { name = newName; }
 };
 
+class Game : public GameObject { // класс игры
+private:
+    Board* board;
+    Player* player;
+    int state;
+    time_t startTime;
+    time_t pauseTime;
 
+public:
+    Game(Board* b, Player* p) : board(b), player(p), state(0) {
+        startTime = time(NULL);
+        pauseTime = 0;
+    }
+
+    void print() const override {
+        printf("=== ИГРА ===\n");
+        printf("Статус: ");
+        switch (state) {
+        case 0: printf("В процессе\n"); break;
+        case 1: printf("ПОБЕДА!\n"); break;
+        case 2: printf("ПРОИГРЫШ\n"); break;
+        }
+        if (board) board->print();
+        if (player) player->print();
+    }
+
+    void winGame() {
+        state = 1;
+        if (player) player->updateBestTime();
+    }
+
+    void loseGame() {
+        state = 2;
+    }
+
+    bool isGameRunning() const {
+        return state == 0;
+    }
+
+    int getGameTime() const {
+        return (int)(time(NULL) - startTime);
+    }
+
+    // Геттеры
+    int getState() const { return state; }
+    Board* getBoard() const { return board; }
+    Player* getPlayer() const { return player; }
+};
 
 class Settings : public GameObject {         //Класс настроек
 private:
@@ -431,6 +478,148 @@ public:
         return std::string(buffer);
     }
 };
+
+class GameController : public GameObject { // класс управления игрой
+private:
+    Game* currentGame;
+
+public:
+    GameController() : currentGame(nullptr) {}
+
+    void setGame(Game* game) {
+        currentGame = game;
+    }
+
+    void print() const override {
+        printf("Контроллер игры, игра %s\n", currentGame ? "активна" : "не активна");
+    }
+
+    void processMove(const Coordinate& coord) {
+        if (!currentGame) return;
+
+        Board* board = currentGame->getBoard();
+        Player* player = currentGame->getPlayer();
+
+        if (board && player) {
+            Cell* cell = board->getCell(coord.getX(), coord.getY());
+            if (cell) {
+                if (!cell->getIsOpen()) {
+                    cell->open();
+                    board->decreaseSafeCells();
+                    player->addOpenedCell();
+
+                    if (cell->getIsBomb()) {
+                        player->addMistake();
+                        currentGame->loseGame();
+                    }
+                    else if (board->isGameWon()) {
+                        currentGame->winGame();
+                    }
+                }
+            }
+        }
+    }
+};
+
+class Validator : public GameObject { // класс валидатора
+public:
+    void print() const override {
+        printf("Валидатор входных данных\n");
+    }
+
+    bool isValidCoordinate(const Coordinate& coord, int maxX, int maxY) {
+        return coord.getX() >= 0 && coord.getX() < maxX &&
+            coord.getY() >= 0 && coord.getY() < maxY;
+    }
+
+    bool isValidName(const std::string& name) {
+        return !name.empty() && name.length() <= 49;
+    }
+};
+
+class GameFactory : public GameObject { // класс фабрики игр
+public:
+    void print() const override {
+        printf("Фабрика создания игр\n");
+    }
+
+    Game* createEasyGame(const std::string& playerName) {
+        Board* board = new Board(9, 9, 10);
+        Player* player = new Player(playerName);
+        return new Game(board, player);
+    }
+
+    Game* createMediumGame(const std::string& playerName) {
+        Board* board = new Board(16, 16, 40);
+        Player* player = new Player(playerName);
+        return new Game(board, player);
+    }
+
+    Game* createHardGame(const std::string& playerName) {
+        Board* board = new Board(30, 16, 99);
+        Player* player = new Player(playerName);
+        return new Game(board, player);
+    }
+};
+
+class ScoringSystem : public GameObject { // класс системы очков
+private:
+    int baseScore;
+    int timeBonus;
+    int mistakePenalty;
+
+public:
+    ScoringSystem() : baseScore(1000), timeBonus(50), mistakePenalty(100) {}
+
+    void print() const override {
+        printf("Система подсчета очков\n");
+    }
+
+    int calculateScore(const Player& player, int gameTime) {
+        int score = baseScore;
+        score += (3600 - gameTime) / 60 * timeBonus; // бонус за быстроту
+        score -= player.getMistakes() * mistakePenalty; // штраф за ошибки
+        return score > 0 ? score : 0;
+    }
+};
+
+class PlayerSession : public GameObject { // класс сессии игрока
+private:
+    Player* player;
+    GameStats stats;
+
+public:
+    PlayerSession(Player* p) : player(p) {}
+
+    void print() const override {
+        printf("Сессия игрока: %s\n", player ? player->getName().c_str() : "нет игрока");
+        stats.print();
+    }
+
+    void addGameResult(bool won, int time) {
+        stats.addGame(won, time);
+    }
+};
+
+class Notifier : public GameObject { // класс уведомлений
+public:
+    void print() const override {
+        printf("Система уведомлений\n");
+    }
+
+    void showWinMessage() {
+        printf("ПОЗДРАВЛЯЕМ! ВЫ ВЫИГРАЛИ!\n");
+    }
+
+    void showLoseMessage() {
+        printf("ВЫ ПРОИГРАЛИ! ПОПРОБУЙТЕ ЕЩЕ РАЗ!\n");
+    }
+
+    void showErrorMessage(const std::string& message) {
+        printf("ОШИБКА: %s\n", message.c_str());
+    }
+};
+
 class Difficulty : public GameObject {          //Класс сложности
 private:
     std::string level;
