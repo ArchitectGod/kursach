@@ -261,6 +261,39 @@ public:
     void setDifficulty(int value) { difficulty = value; }
 };
 
+
+class Logger : public GameObject { // Класс логгера
+private:
+    std::string filename;
+    FILE* file;
+
+public:
+    Logger(const std::string& fname) : filename(fname) {
+        file = fopen(filename.c_str(), "a");
+    }
+
+    ~Logger() {
+        if (file) {
+            fclose(file);
+        }
+    }
+
+    void print() const override {
+        printf("Логгер: файл %s\n", filename.c_str());
+    }
+
+    void logMessage(const std::string& message) {
+        if (file) {
+            time_t now = time(NULL);
+            fprintf(file, "[%s] %s\n", ctime(&now), message.c_str());
+            fflush(file);
+        }
+    }
+};
+
+
+
+
 class Menu : public GameObject {         //Класс меню
 private:
     std::string title;
@@ -376,8 +409,8 @@ public:
 };
 
 
-// 12. Класс бомбы
-class Bomb : public GameObject {
+
+class Bomb : public GameObject { // Класс бомбы
 private:
     Coordinate position;
     bool exploded;
@@ -639,4 +672,155 @@ public:
     int getWidth() const { return width; }
     int getHeight() const { return height; }
     int getBombs() const { return bombs; }
+};
+
+
+class PlayerProfile : public GameObject { //  Класс профиля игрока
+private:
+    Player* player;
+    std::string avatar;
+    int level;
+
+public:
+    PlayerProfile(Player* p, const std::string& av = "default") : player(p), avatar(av), level(1) {}
+
+    void print() const override {
+        printf("Профиль игрока: %s\n", player ? player->getName().c_str() : "нет игрока");
+        printf("Аватар: %s, Уровень: %d\n", avatar.c_str(), level);
+    }
+
+    void levelUp() {
+        level++;
+    }
+};
+
+
+class Achievement : public GameObject { // Класс ачивментов
+private:
+    std::string title;
+    std::string description;
+    bool unlocked;
+
+public:
+    Achievement(const std::string& t, const std::string& desc) : title(t), description(desc), unlocked(false) {}
+
+    void unlock() {
+        unlocked = true;
+    }
+
+    void print() const override {
+        printf("Достижение: %s - %s [%s]\n", title.c_str(), description.c_str(),
+            unlocked ? "РАЗБЛОКИРОВАНО" : "заблокировано");
+    }
+
+    bool isUnlocked() const { return unlocked; }
+};
+
+
+
+class AchievementSystem : public GameObject { // Класс системы ачивментов
+private:
+    std::vector<Achievement> achievements;
+
+public:
+    AchievementSystem() {
+        // Добавляем базовые достижения
+        achievements.emplace_back("Новичок", "Сыграйте первую игру");
+        achievements.emplace_back("Сапер", "Выиграйте 10 игр");
+        achievements.emplace_back("Эксперт", "Выиграйте игру на сложном уровне");
+        achievements.emplace_back("Скоростник", "Выиграйте игру менее чем за 60 секунд");
+    }
+
+    void print() const override {
+        printf("=== СИСТЕМА ДОСТИЖЕНИЙ ===\n");
+        for (const auto& achievement : achievements) {
+            achievement.print();
+        }
+    }
+
+    void checkAchievements(const PlayerSession& session) {
+        // Здесь будет логика проверки достижений
+    }
+};
+
+
+
+class GameSave : public GameObject { // Класс сохранения игры
+private:
+    std::string saveName;
+    time_t saveTime;
+
+public:
+    GameSave(const std::string& name) : saveName(name) {
+        saveTime = time(NULL);
+    }
+
+    void print() const override {
+        printf("Сохранение: %s, время: %s", saveName.c_str(), ctime(&saveTime));
+    }
+
+    std::string getName() const { return saveName; }
+    time_t getSaveTime() const { return saveTime; }
+};
+
+
+
+class SaveManager : public GameObject { // Класс менеджера сохранений
+private:
+    std::vector<GameSave> saves;
+
+public:
+    void print() const override {
+        printf("Менеджер сохранений, сохранений: %zu\n", saves.size());
+        for (const auto& save : saves) {
+            save.print();
+        }
+    }
+
+    void createSave(const std::string& name) {
+        saves.emplace_back(name);
+    }
+
+    bool loadSave(const std::string& name) {
+        for (const auto& save : saves) {
+            if (save.getName() == name) {
+                printf("Загружаем сохранение: %s\n", name.c_str());
+                return true;
+            }
+        }
+        return false;
+    }
+};
+
+
+class SoundSystem : public GameObject { // Класс звуковой системы
+private:
+    bool enabled;
+
+public:
+    SoundSystem() : enabled(true) {}
+
+    void print() const override {
+        printf("Звуковая система: %s\n", enabled ? "включена" : "выключена");
+    }
+
+    void playClickSound() {
+        if (enabled) {
+            printf("[ЗВУК] Клик!\n");
+        }
+    }
+
+    void playExplosionSound() {
+        if (enabled) {
+            printf("[ЗВУК] БУМ!\n");
+        }
+    }
+
+    void playWinSound() {
+        if (enabled) {
+            printf("[ЗВУК] Победа!\n");
+        }
+    }
+
+    void setEnabled(bool enable) { enabled = enable; }
 };
