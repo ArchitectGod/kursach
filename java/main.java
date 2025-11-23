@@ -244,6 +244,67 @@ public void toggleAutoBombs() {
     public int getDifficulty() { return difficulty; }
 }
 
+//Класс таблицы игр
+class gamesboard {
+    private String name;
+    private int time;
+    private int height;
+    private int width;
+    private int bombs;
+    private int day;
+    private int month;
+    private int age;
+    private boolean win;
+
+    public gamesboard(String playerName, int t, int w, int h, int b, boolean victory) {
+        this.name = playerName;
+        this.time = t;
+        this.width = w;
+        this.height = h;
+        this.bombs = b;
+        this.win = victory;
+
+        LocalDateTime now = LocalDateTime.now();
+        this.day = now.getDayOfMonth();
+        this.month = now.getMonthValue();
+        this.age = now.getYear();
+    }
+
+    public void print() {
+        System.out.printf("%s: %d сек, %dx%d, %s%n", name, time, width, height,
+                win ? "ПОБЕДА" : "ПРОИГРЫШ");
+    }
+
+    public void inputData(Scanner scanner) {
+        System.out.println("Введите данные для таблицы игр:");
+        System.out.print("Имя: ");
+        this.name = scanner.next();
+        System.out.print("Время (сек): ");
+        this.time = scanner.nextInt();
+        System.out.print("Размеры поля (ширина высота): ");
+        this.width = scanner.nextInt();
+        this.height = scanner.nextInt();
+        System.out.print("Количество бомб: ");
+        this.bombs = scanner.nextInt();
+        System.out.print("Результат (1-победа, 0-поражение): ");
+        this.win = scanner.nextInt() == 1;
+    }
+
+public void saveToFile(String filename) {
+        try (PrintWriter file = new PrintWriter(new FileWriter(filename, true))) {
+            file.printf("%s,%d,%d,%d,%d,%d,%d,%d,%d%n",
+                    name, time, height, width, bombs,
+                    day, month, age, win ? 1 : 0);
+        } catch (IOException e) {
+            System.out.println("Ошибка сохранения: " + e.getMessage());
+        }
+    }
+
+    public String getName() { return name; }
+    public int getTime() { return time; }
+    public boolean isWin() { return win; }
+}
+
 // Класс Меню
 class Menu {
     public void print() {
@@ -332,4 +393,234 @@ class Difficulty {
     public int getWidth() { return width; }
     public int getHeight() { return height; }
     public int getBombs() { return bombs; }
+}
+
+//Тема оформления
+class Theme {
+    private String name;
+    private String cellClosed;
+    private String cellOpen;
+    private String bomb;
+
+    public Theme(String themeName) {
+        this.name = themeName;
+        if (themeName.equals("classic")) {
+            cellClosed = ".";
+            cellOpen = " ";
+            bomb = "*";
+        } else if (themeName.equals("modern")) {
+            cellClosed = "■";
+            cellOpen = "□";
+            bomb = "💣";
+        } else if (themeName.equals("simple")) {
+            cellClosed = "#";
+            cellOpen = " ";
+            bomb = "X";
+        }
+    }
+   
+    public Theme() {
+        this("classic");
+    }
+
+    public void print() {
+        System.out.printf("Тема: %s%n", name);
+        System.out.printf("Закрытая клетка: %s, Открытая клетка: %s, Бомба: %s%n",
+            cellClosed, cellOpen, bomb);
+    }
+
+    public void inputSelectTheme(Scanner scanner) {
+        System.out.print("Выберите тему (1-classic, 2-modern, 3-simple): ");
+        int choice = scanner.nextInt();
+        switch (choice) {
+            case 1: name = "classic"; cellClosed = "."; cellOpen = " "; bomb = "*"; break;
+            case 2: name = "modern"; cellClosed = "■"; cellOpen = "□"; bomb = "💣"; break;
+            case 3: name = "simple"; cellClosed = "#"; cellOpen = " "; bomb = "X"; break;
+        }
+    }
+
+    public String getCellClosed() { return cellClosed; }
+    public String getCellOpen() { return cellOpen; }
+    public String getBomb() { return bomb; }
+}
+
+//Система помощи
+class HelpSystem {
+    public void print() {
+        System.out.println("=== СИСТЕМА ПОМОЩИ ===");
+        System.out.println("Цель игры: открыть все клетки без бомб");
+        System.out.println("Управление:");
+        System.out.println("- ЛКМ: открыть клетку");
+        System.out.println("- ПКМ: поставить/убрать флаг");
+        System.out.println("Цифры показывают количество бомб вокруг клетки");
+    }
+
+    public void showRules() {
+        print();
+    }
+
+    public void showTips() {
+        System.out.println("=== СОВЕТЫ ===");
+        System.out.println("1. Начинайте с углов");
+        System.out.println("2. Используйте флаги для отметки бомб");
+        System.out.println("3. Анализируйте цифры для определения безопасных клеток");
+        System.out.println("4. Если вокруг клетки 0 бомб, она откроет область автоматически");
+    }
+
+    public void showControls() {
+        System.out.println("=== УПРАВЛЕНИЕ ===");
+        System.out.println("WASD/Стрелки - перемещение");
+        System.out.println("Пробел - открыть клетку");
+        System.out.println("F - поставить/убрать флаг");
+        System.out.println("P - пауза");
+        System.out.println("H - помощь");
+    }
+}
+
+//Анализатор игры
+class GameAnalyzer {
+    public void print() {
+        System.out.println("Анализатор игрового процесса");
+    }
+
+    public void analyzeBoard(Board board) {
+        int flaggedBombs = 0;
+        int totalBombs = board.getTotalBombs();
+
+        System.out.printf("Анализ поля: бомб %d, безопасных клеток осталось: %d%n",
+            totalBombs, board.getSafeCellsLeft());
+    }
+
+public void analyzePlayer(Player player) {
+        System.out.printf("Анализ игрока: %s%n", player.getName());
+        System.out.printf("Эффективность: %.1f%%%n",
+            player.getOpenedCells() > 0 ?
+            (float)(player.getOpenedCells() - player.getMistakes()) / player.getOpenedCells() * 100 : 0);
+    }
+
+    public void analyzeGame(Game game) {
+        System.out.println("Анализ игры:");
+        System.out.println("Статус: " + (game.isGameRunning() ? "в процессе" : (game.getState() == 1 ? "победа" : "поражение")));
+        System.out.println("Время: " + game.getGameTime() + " сек");
+    }
+}
+
+//Рекорд
+class HighScore {
+    private String playerName;
+    private int score;
+    private int time;
+    private String difficulty;
+
+    public HighScore(String name, int s, int t, String diff) {
+        this.playerName = name;
+        this.score = s;
+        this.time = t;
+        this.difficulty = diff;
+    }
+   
+    public HighScore() {
+        this("", 0, 0, "");
+    }
+
+    public void print() {
+        System.out.printf("Рекорд: %s - %d очков, время: %d сек, сложность: %s%n",
+            playerName, score, time, difficulty);
+    }
+
+    public void inputHighScore(Scanner scanner) {
+        System.out.println("Введите данные рекорда:");
+        System.out.print("Имя: ");
+        this.playerName = scanner.next();
+        System.out.print("Очки: ");
+        this.score = scanner.nextInt();
+        System.out.print("Время (сек): ");
+        this.time = scanner.nextInt();
+        System.out.print("Сложность: ");
+        this.difficulty = scanner.next();
+    }
+
+    public int getScore() { return score; }
+}
+
+//Менеджер рекордов
+class HighScoreManager {
+    private List<HighScore> highScores;
+
+    public HighScoreManager() {
+        this.highScores = new ArrayList<>();
+    }
+
+    public void print() {
+        System.out.println("=== ТАБЛИЦА РЕКОРДОВ ===");
+        for (int i = 0; i < highScores.size(); i++) {
+            System.out.print((i + 1) + ". ");
+            highScores.get(i).print();
+        }
+    }
+
+    public void inputAddScore(Scanner scanner) {
+        HighScore score = new HighScore();
+        score.inputHighScore(scanner);
+        addScore(score);
+    }
+
+    public void addScore(HighScore score) {
+        highScores.add(score);
+        highScores.sort((a, b) -> Integer.compare(b.getScore(), a.getScore()));
+
+        if (highScores.size() > 10) {
+            highScores = highScores.subList(0, 10);
+        }
+    }
+
+    public void clearScores() {
+        highScores.clear();
+    }
+}
+
+//Система подсказок
+class HintSystem {
+    private int hintsAvailable;
+
+    public HintSystem() {
+        this.hintsAvailable = 3;
+    }
+
+    public void print() {
+        System.out.printf("Система подсказок, доступно подсказок: %d%n", hintsAvailable);
+    }
+
+    public void inputUseHint(Scanner scanner) {
+        System.out.print("Использовать подсказку? (1-да, 0-нет): ");
+        int choice = scanner.nextInt();
+        if (choice == 1 && hintsAvailable > 0) {
+            hintsAvailable--;
+            System.out.printf("Подсказка использована! Осталось: %d%n", hintsAvailable);
+        }
+    }
+
+    public Coordinate getHint(Board board) {
+        if (hintsAvailable > 0) {
+            hintsAvailable--;
+
+            for (int y = 0; y < board.getHeight(); y++) {
+                for (int x = 0; x < board.getWidth(); x++) {
+                    Cell cell = board.getCell(x, y);
+                    if (cell != null && !cell.getIsOpen() && !cell.getIsBomb()) {
+                        System.out.printf("Подсказка: безопасная клетка [%d,%d]%n", x, y);
+                        return new Coordinate(x, y);
+                    }
+                }
+            }
+        } else {
+            System.out.println("Подсказки закончились!");
+        }
+        return new Coordinate(-1, -1);
+    }
+
+    public void addHints(int count) {
+        hintsAvailable += count;
+        System.out.printf("Добавлено %d подсказок. Всего: %d%n", count, hintsAvailable);
+    }
 }
