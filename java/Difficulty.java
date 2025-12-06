@@ -18,7 +18,7 @@ class Difficulty {
     }
 
     public void print() {
-        System.out.printf("Уровень сложности: %s (%dx%d, %d бомб)%n", level, width, height, bombs);
+        System.out.printf("Уровень сложности: %s (%dx%d, %d бомб)%n", this.level, this.width, this.height, this.bombs);
     }
 
     public void inputDifficulty(Scanner scanner) {
@@ -26,21 +26,21 @@ class Difficulty {
         int choice = scanner.nextInt();
 
         switch (choice) {
-            case 0: level = "Легко"; width = 9; height = 9; bombs = 10; break;
-            case 1: level = "Средне"; width = 16; height = 16; bombs = 40; break;
-            case 2: level = "Сложно"; width = 30; height = 16; bombs = 99; break;
+            case 0: this.level = "Легко"; this.width = 9; this.height = 9; this.bombs = 10; break;
+            case 1: this.level = "Средне"; this.width = 16; this.height = 16; this.bombs = 40; break;
+            case 2: this.level = "Сложно"; this.width = 30; this.height = 16; this.bombs = 99; break;
             case 3:
-                level = "Пользовательская";
+                this.level = "Пользовательская";
                 System.out.print("Введите ширину, высоту и количество бомб: ");
-                width = scanner.nextInt();
-                height = scanner.nextInt();
-                bombs = scanner.nextInt();
+                this.width = scanner.nextInt();
+                this.height = scanner.nextInt();
+                this.bombs = scanner.nextInt();
                 break;
         }
     }
 
-    public String getLevel() { return level; }
-    public int getWidth() { return width; }
-    public int getHeight() { return height; }
-    public int getBombs() { return bombs; }
+    public String getLevel() { return this.level; }
+    public int getWidth() { return this.width; }
+    public int getHeight() { return this.height; }
+    public int getBombs() { return this.bombs; }
 }

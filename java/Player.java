@@ -24,9 +24,9 @@ class Player {
     }
 
     public void print() {
-        System.out.printf("Игрок: %s%n", name);
+        System.out.printf("Игрок: %s%n", this.name);
         System.out.printf("Время: %d сек, Открыто: %d, Ошибок: %d, Лучшее время: %d сек%n",
-                timeSpent, openedCells, mistakes, bestTime);
+                this.timeSpent, this.openedCells, this.mistakes, this.bestTime);
     }
 
     public void inputPlayerInfo(Scanner scanner) {
@@ -37,32 +37,32 @@ class Player {
     }
 
     public void addMistake() {
-        mistakes++;
-        System.out.printf("Ошибка! Всего ошибок: %d%n", mistakes);
+        this.mistakes++;
+        System.out.printf("Ошибка! Всего ошибок: %d%n", this.mistakes);
     }
 
     public void addOpenedCell() {
-        openedCells++;
-        System.out.printf("Открыта клетка! Всего открыто: %d%n", openedCells);
+        this.openedCells++;
+        System.out.printf("Открыта клетка! Всего открыто: %d%n", this.openedCells);
     }
 
     public void updateBestTime() {
-        if (bestTime == 0 || timeSpent < bestTime) {
-            bestTime = timeSpent;
-            System.out.printf("Новый рекорд: %d сек!%n", bestTime);
+        if (this.bestTime == 0 || this.timeSpent < this.bestTime) {
+            this.bestTime = this.timeSpent;
+            System.out.printf("Новый рекорд: %d сек!%n", this.bestTime);
         }
     }
 
     public void addTime(int seconds) {
-        timeSpent += seconds;
+        this.timeSpent += seconds;
     }
 
-    public String getName() { return name; }
-    public int getTimeSpent() { return timeSpent; }
-    public int getOpenedCells() { return openedCells; }
-    public int getMistakes() { return mistakes; }
-    public int getBestTime() { return bestTime; }
+    public String getName() { return this.name; }
+    public int getTimeSpent() { return this.timeSpent; }
+    public int getOpenedCells() { return this.openedCells; }
+    public int getMistakes() { return this.mistakes; }
+    public int getBestTime() { return this.bestTime; }
 
-    public void setTimeSpent(int time) { timeSpent = time; }
-    public void setName(String newName) { name = newName; }
+    public void setTimeSpent(int time) { this.timeSpent = time; }
+    public void setName(String newName) { this.name = newName; }
 }

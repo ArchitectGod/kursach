@@ -14,7 +14,7 @@ class GameSave {
     }
 
     public void print() {
-        System.out.printf("Сохранение: %s, время: %s%n", saveName, new Date(saveTime));
+        System.out.printf("Сохранение: %s, время: %s%n", this.saveName, new Date(this.saveTime));
     }
 
     public void inputSaveData(Scanner scanner) {
@@ -23,6 +23,6 @@ class GameSave {
         this.saveTime = System.currentTimeMillis();
     }
 
-    public String getName() { return saveName; }
-    public long getSaveTime() { return saveTime; }
+    public String getName() { return this.saveName; }
+    public long getSaveTime() { return this.saveTime; }
 }

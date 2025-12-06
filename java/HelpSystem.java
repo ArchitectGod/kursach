@@ -15,7 +15,7 @@ class HelpSystem {
     }
 
     public void showRules() {
-        print();
+        this.print();
     }
 
     public void showTips() {
@@ -25,8 +25,7 @@ class HelpSystem {
         System.out.println("3. Анализируйте цифры для определения безопасных клеток");
         System.out.println("4. Если вокруг клетки 0 бомб, она откроет область автоматически");
     }
-
-    public void showControls() {
+public void showControls() {
         System.out.println("=== УПРАВЛЕНИЕ ===");
         System.out.println("WASD/Стрелки - перемещение");
         System.out.println("Пробел - открыть клетку");

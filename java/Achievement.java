@@ -8,27 +8,27 @@ class Achievement {
     private String title;
     private String description;
     private boolean unlocked;
-public Achievement(String t, String desc) {
+
+    public Achievement(String t, String desc) {
         this.title = t;
         this.description = desc;
         this.unlocked = false;
     }
 
     public void print() {
-        System.out.printf("Достижение: %s - %s [%s]%n", title, description,
-            unlocked ? "РАЗБЛОКИРОВАНО" : "заблокировано");
+        System.out.printf("Достижение: %s - %s [%s]%n", this.title, this.description,
+            this.unlocked ? "РАЗБЛОКИРОВАНО" : "заблокировано");
     }
-
-    public void inputUnlock(Scanner scanner) {
-        System.out.printf("Разблокировать достижение '%s'? (1-да, 0-нет): ", title);
+public void inputUnlock(Scanner scanner) {
+        System.out.printf("Разблокировать достижение '%s'? (1-да, 0-нет): ", this.title);
         int choice = scanner.nextInt();
-        if (choice == 1) unlock();
+        if (choice == 1) this.unlock();
     }
 
     public void unlock() {
-        unlocked = true;
-        System.out.printf("🎊 Достижение разблокировано: %s! 🎊%n", title);
+        this.unlocked = true;
+        System.out.printf("🎊 Достижение разблокировано: %s! 🎊%n", this.title);
     }
 
-    public boolean isUnlocked() { return unlocked; }
+    public boolean isUnlocked() { return this.unlocked; }
 }

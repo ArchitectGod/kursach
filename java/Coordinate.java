@@ -8,9 +8,9 @@ class Coordinate {
     private int x;
     private int y;
 
-    public Coordinate(int xCoord, int yCoord) {
-        this.x = xCoord;
-        this.y = yCoord;
+    public Coordinate(int x, int y) {
+        this.x = x;
+        this.y = y;
     }
     
     public Coordinate() {
@@ -18,7 +18,7 @@ class Coordinate {
     }
 
     public void print() {
-        System.out.printf("Координаты: (%d, %d)%n", x, y);
+        System.out.printf("Координаты: (%d, %d)%n", this.x, this.y);
     }
 
     public void input(Scanner scanner) {
@@ -27,20 +27,20 @@ class Coordinate {
         this.y = scanner.nextInt();
     }
 
-    public int getX() { return x; }
-    public int getY() { return y; }
-    public void setX(int newX) { x = newX; }
-    public void setY(int newY) { y = newY; }
+    public int getX() { return this.x; }
+    public int getY() { return this.y; }
+    public void setX(int newX) { this.x = newX; }
+    public void setY(int newY) { this.y = newY; }
 
     public boolean isValid(int maxX, int maxY) {
-        return x >= 0 && x < maxX && y >= 0 && y < maxY;
+        return this.x >= 0 && this.x < maxX && this.y >= 0 && this.y < maxY;
     }
 
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
+        if (obj == null || this.getClass() != obj.getClass()) return false;
         Coordinate that = (Coordinate) obj;
-        return x == that.x && y == that.y;
+        return this.x == that.x && this.y == that.y;
     }
 }

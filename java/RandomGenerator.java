@@ -26,10 +26,10 @@ class RandomGenerator {
     }
 
     public int getRandom(int min, int max) {
-        return min + random.nextInt(max - min + 1);
+        return min + this.random.nextInt(max - min + 1);
     }
 
     public Coordinate getRandomCoordinate(int maxX, int maxY) {
-        return new Coordinate(getRandom(0, maxX - 1), getRandom(0, maxY - 1));
+        return new Coordinate(this.getRandom(0, maxX - 1), this.getRandom(0, maxY - 1));
     }
 }

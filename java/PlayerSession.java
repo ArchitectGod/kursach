@@ -14,21 +14,20 @@ class PlayerSession {
     }
 
     public void print() {
-        System.out.printf("Сессия игрока: %s%n", player != null ? player.getName() : "нет игрока");
-        stats.print();
+        System.out.printf("Сессия игрока: %s%n", this.player != null ? this.player.getName() : "нет игрока");
+        this.stats.print();
     }
-
-    public void inputSessionData(Scanner scanner) {
+public void inputSessionData(Scanner scanner) {
         System.out.println("Ввод данных сессии...");
-        if (player != null) {
-            player.inputPlayerInfo(scanner);
+        if (this.player != null) {
+            this.player.inputPlayerInfo(scanner);
         }
     }
 
     public void addGameResult(boolean won, int time) {
-        stats.addGame(won, time);
+        this.stats.addGame(won, time);
     }
 
-    public Player getPlayer() { return player; }
-    public GameStats getStats() { return stats; }
+    public Player getPlayer() { return this.player; }
+    public GameStats getStats() { return this.stats; }
 }

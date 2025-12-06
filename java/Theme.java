@@ -13,17 +13,17 @@ class Theme {
     public Theme(String themeName) {
         this.name = themeName;
         if (themeName.equals("classic")) {
-            cellClosed = ".";
-            cellOpen = " ";
-            bomb = "*";
+            this.cellClosed = ".";
+            this.cellOpen = " ";
+            this.bomb = "*";
         } else if (themeName.equals("modern")) {
-            cellClosed = "■";
-            cellOpen = "□";
-            bomb = "💣";
+            this.cellClosed = "■";
+            this.cellOpen = "□";
+            this.bomb = "💣";
         } else if (themeName.equals("simple")) {
-            cellClosed = "#";
-            cellOpen = " ";
-            bomb = "X";
+            this.cellClosed = "#";
+            this.cellOpen = " ";
+            this.bomb = "X";
         }
     }
     
@@ -32,22 +32,22 @@ class Theme {
     }
 
     public void print() {
-        System.out.printf("Тема: %s%n", name);
+        System.out.printf("Тема: %s%n", this.name);
         System.out.printf("Закрытая клетка: %s, Открытая клетка: %s, Бомба: %s%n",
-            cellClosed, cellOpen, bomb);
+            this.cellClosed, this.cellOpen, this.bomb);
     }
 
     public void inputSelectTheme(Scanner scanner) {
         System.out.print("Выберите тему (1-classic, 2-modern, 3-simple): ");
         int choice = scanner.nextInt();
         switch (choice) {
-            case 1: name = "classic"; cellClosed = "."; cellOpen = " "; bomb = "*"; break;
-            case 2: name = "modern"; cellClosed = "■"; cellOpen = "□"; bomb = "💣"; break;
-            case 3: name = "simple"; cellClosed = "#"; cellOpen = " "; bomb = "X"; break;
+            case 1: this.name = "classic"; this.cellClosed = "."; this.cellOpen = " "; this.bomb = "*"; break;
+            case 2: this.name = "modern"; this.cellClosed = "■"; this.cellOpen = "□"; this.bomb = "💣"; break;
+            case 3: this.name = "simple"; this.cellClosed = "#"; this.cellOpen = " "; this.bomb = "X"; break;
         }
     }
 
-    public String getCellClosed() { return cellClosed; }
-    public String getCellOpen() { return cellOpen; }
-    public String getBomb() { return bomb; }
+    public String getCellClosed() { return this.cellClosed; }
+    public String getCellOpen() { return this.cellOpen; }
+    public String getBomb() { return this.bomb; }
 }

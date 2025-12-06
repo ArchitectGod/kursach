@@ -9,26 +9,26 @@ class AchievementSystem {
 
     public AchievementSystem() {
         this.achievements = new ArrayList<>();
-        achievements.add(new Achievement("Новичок", "Сыграйте первую игру"));
-        achievements.add(new Achievement("Сапер", "Выиграйте 10 игр"));
-        achievements.add(new Achievement("Эксперт", "Выиграйте игру на сложном уровне"));
-        achievements.add(new Achievement("Скоростник", "Выиграйте игру менее чем за 60 секунд"));
-        achievements.add(new Achievement("Безошибочный", "Выиграйте игру без ошибок"));
+        this.achievements.add(new Achievement("Новичок", "Сыграйте первую игру"));
+        this.achievements.add(new Achievement("Сапер", "Выиграйте 10 игр"));
+        this.achievements.add(new Achievement("Эксперт", "Выиграйте игру на сложном уровне"));
+        this.achievements.add(new Achievement("Скоростник", "Выиграйте игру менее чем за 60 секунд"));
+        this.achievements.add(new Achievement("Безошибочный", "Выиграйте игру без ошибок"));
     }
 
     public void print() {
         System.out.println("=== СИСТЕМА ДОСТИЖЕНИЙ ===");
-        for (int i = 0; i < achievements.size(); i++) {
+        for (int i = 0; i < this.achievements.size(); i++) {
             System.out.print((i + 1) + ". ");
-            achievements.get(i).print();
+            this.achievements.get(i).print();
         }
     }
 
     public void inputUnlockAchievement(Scanner scanner) {
-        System.out.printf("Выберите достижение для разблокировки (1-%d): ", achievements.size());
+        System.out.printf("Выберите достижение для разблокировки (1-%d): ", this.achievements.size());
         int choice = scanner.nextInt();
-        if (choice >= 1 && choice <= achievements.size()) {
-            achievements.get(choice - 1).inputUnlock(scanner);
+        if (choice >= 1 && choice <= this.achievements.size()) {
+            this.achievements.get(choice - 1).inputUnlock(scanner);
         }
     }
 
@@ -38,7 +38,7 @@ class AchievementSystem {
 
     public int getUnlockedCount() {
         int count = 0;
-        for (Achievement achievement : achievements) {
+        for (Achievement achievement : this.achievements) {
             if (achievement.isUnlocked()) count++;
         }
         return count;

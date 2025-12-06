@@ -10,33 +10,34 @@ class SoundSystem {
     public SoundSystem() {
         this.enabled = true;
     }
-public void print() {
-        System.out.println("Звуковая система: " + (enabled ? "включена" : "выключена"));
+
+    public void print() {
+        System.out.println("Звуковая система: " + (this.enabled ? "включена" : "выключена"));
     }
 
     public void inputToggle(Scanner scanner) {
         System.out.print("Переключить звук? (1-вкл, 0-выкл): ");
         int choice = scanner.nextInt();
-        enabled = (choice == 1);
+        this.enabled = (choice == 1);
     }
 
     public void playClickSound() {
-        if (enabled) {
+        if (this.enabled) {
             System.out.println("[ЗВУК] Клик!");
         }
     }
 
     public void playExplosionSound() {
-        if (enabled) {
+        if (this.enabled) {
             System.out.println("[ЗВУК] БУМ!");
         }
     }
 
     public void playWinSound() {
-        if (enabled) {
+        if (this.enabled) {
             System.out.println("[ЗВУК] Победа!");
         }
     }
 
-    public void setEnabled(boolean enable) { enabled = enable; }
+    public void setEnabled(boolean enable) { this.enabled = enable; }
 }

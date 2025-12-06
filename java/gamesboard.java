@@ -30,8 +30,8 @@ class gamesboard {
     }
 
     public void print() {
-        System.out.printf("%s: %d сек, %dx%d, %s%n", name, time, width, height,
-                win ? "ПОБЕДА" : "ПРОИГРЫШ");
+        System.out.printf("%s: %d сек, %dx%d, %s%n", this.name, this.time, this.width, this.height,
+                this.win ? "ПОБЕДА" : "ПРОИГРЫШ");
     }
 
     public void inputData(Scanner scanner) {
@@ -48,17 +48,18 @@ class gamesboard {
         System.out.print("Результат (1-победа, 0-поражение): ");
         this.win = scanner.nextInt() == 1;
     }
-public void saveToFile(String filename) {
+
+    public void saveToFile(String filename) {
         try (PrintWriter file = new PrintWriter(new FileWriter(filename, true))) {
             file.printf("%s,%d,%d,%d,%d,%d,%d,%d,%d%n",
-                    name, time, height, width, bombs,
-                    day, month, age, win ? 1 : 0);
+                    this.name, this.time, this.height, this.width, this.bombs,
+                    this.day, this.month, this.age, this.win ? 1 : 0);
         } catch (IOException e) {
             System.out.println("Ошибка сохранения: " + e.getMessage());
         }
     }
 
-    public String getName() { return name; }
-    public int getTime() { return time; }
-    public boolean isWin() { return win; }
+    public String getName() { return this.name; }
+    public int getTime() { return this.time; }
+    public boolean isWin() { return this.win; }
 }

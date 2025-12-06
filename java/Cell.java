@@ -3,6 +3,7 @@ import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+
 // 2. Класс клетки
 class Cell {
     private boolean isBomb;
@@ -26,14 +27,14 @@ class Cell {
     }
 
     public void print() {
-        System.out.printf("Клетка [%d,%d]: ", coordinateX, coordinateY);
-        if (isOpen) {
-            if (isBomb) {
+        System.out.printf("Клетка [%d,%d]: ", this.coordinateX, this.coordinateY);
+        if (this.isOpen) {
+            if (this.isBomb) {
                 System.out.print("Бомба");
             } else {
-                System.out.printf("Бомб вокруг: %d", countBomb);
+                System.out.printf("Бомб вокруг: %d", this.countBomb);
             }
-        } else if (isFlag) {
+        } else if (this.isFlag) {
             System.out.print("Флаг");
         } else {
             System.out.print("Закрыта");
@@ -42,38 +43,38 @@ class Cell {
     }
 
     public void inputFromUser(Scanner scanner) {
-        System.out.printf("Введите состояние клетки [%d,%d] (0-закрыта, 1-открыта, 2-флаг): ", coordinateX, coordinateY);
+        System.out.printf("Введите состояние клетки [%d,%d] (0-закрыта, 1-открыта, 2-флаг): ", this.coordinateX, this.coordinateY);
         int state = scanner.nextInt();
         if (state == 1) {
-            open();
+            this.open();
         } else if (state == 2) {
-            toggleFlag();
+            this.toggleFlag();
         }
     }
 
     public void open() {
-        isOpen = true;
-        isFlag = false;
+        this.isOpen = true;
+        this.isFlag = false;
     }
 
     public void toggleFlag() {
-        if (!isOpen) {
-            isFlag = !isFlag;
+        if (!this.isOpen) {
+            this.isFlag = !this.isFlag;
         }
     }
 
     public void setBomb() {
-        isBomb = true;
+        this.isBomb = true;
     }
 
     public void setCountBomb(int count) {
-        countBomb = count;
+        this.countBomb = count;
     }
 
-    public boolean getIsBomb() { return isBomb; }
-    public boolean getIsOpen() { return isOpen; }
-    public boolean getIsFlag() { return isFlag; }
-    public int getCountBomb() { return countBomb; }
-    public int getX() { return coordinateX; }
-    public int getY() { return coordinateY; }
+    public boolean getIsBomb() { return this.isBomb; }
+    public boolean getIsOpen() { return this.isOpen; }
+    public boolean getIsFlag() { return this.isFlag; }
+    public int getCountBomb() { return this.countBomb; }
+    public int getX() { return this.coordinateX; }
+    public int getY() { return this.coordinateY; }
 }

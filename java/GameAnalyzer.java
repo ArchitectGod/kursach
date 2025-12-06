@@ -16,7 +16,8 @@ class GameAnalyzer {
         System.out.printf("Анализ поля: бомб %d, безопасных клеток осталось: %d%n",
             totalBombs, board.getSafeCellsLeft());
     }
-public void analyzePlayer(Player player) {
+
+    public void analyzePlayer(Player player) {
         System.out.printf("Анализ игрока: %s%n", player.getName());
         System.out.printf("Эффективность: %.1f%%%n",
             player.getOpenedCells() > 0 ?

@@ -18,7 +18,7 @@ class ScoringSystem {
     public void print() {
         System.out.println("Система подсчета очков");
         System.out.printf("Базовые очки: %d, Бонус за время: %d, Штраф за ошибку: %d%n",
-            baseScore, timeBonus, mistakePenalty);
+            this.baseScore, this.timeBonus, this.mistakePenalty);
     }
 
     public void inputScoringParams(Scanner scanner) {
@@ -32,14 +32,15 @@ class ScoringSystem {
     }
 
     public int calculateScore(Player player, int gameTime) {
-        int score = baseScore;
-        score += (3600 - gameTime) / 60 * timeBonus;
-        score -= player.getMistakes() * mistakePenalty;
+        int score = this.baseScore;
+        score += (3600 - gameTime) / 60 * this.timeBonus;
+        score -= player.getMistakes() * this.mistakePenalty;
         return Math.max(score, 0);
     }
-public int calculateWinScore(boolean won, int time, int mistakes) {
+
+    public int calculateWinScore(boolean won, int time, int mistakes) {
         if (!won) return 0;
-        int score = baseScore + (1800 - time) / 30 * timeBonus - mistakes * mistakePenalty;
+        int score = this.baseScore + (1800 - time) / 30 * this.timeBonus - mistakes * this.mistakePenalty;
         return Math.max(score, 0);
     }
 }

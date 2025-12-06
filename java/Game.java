@@ -9,8 +9,7 @@ class Game {
     private Player player;
     private int state;
     private Timer timer;
-
-    public Game(Board b, Player p) {
+public Game(Board b, Player p) {
         this.board = b;
         this.player = p;
         this.state = 0;
@@ -19,69 +18,69 @@ class Game {
     }
 
     public void print() {
-System.out.println("=== СОСТОЯНИЕ ИГРЫ ===");
+        System.out.println("=== СОСТОЯНИЕ ИГРЫ ===");
         System.out.print("Статус: ");
-        switch (state) {
+        switch (this.state) {
             case 0: System.out.println("В процессе"); break;
             case 1: System.out.println("ПОБЕДА!"); break;
             case 2: System.out.println("ПРОИГРЫШ"); break;
         }
-        System.out.printf("Время игры: %d сек%n", getGameTime());
-        if (board != null) board.print();
-        if (player != null) player.print();
+        System.out.printf("Время игры: %d сек%n", this.getGameTime());
+        if (this.board != null) this.board.print();
+        if (this.player != null) this.player.print();
     }
 
     public void inputGameSettings(Scanner scanner) {
         System.out.println("=== НАСТРОЙКИ ИГРЫ ===");
-        if (board != null) {
-            board.inputBoardSize(scanner);
+        if (this.board != null) {
+            this.board.inputBoardSize(scanner);
         }
-        if (player != null) {
-            player.inputPlayerInfo(scanner);
+        if (this.player != null) {
+            this.player.inputPlayerInfo(scanner);
         }
     }
 
     public void winGame() {
-        state = 1;
-        timer.pause();
-        if (player != null) {
-            player.updateBestTime();
+        this.state = 1;
+        this.timer.pause();
+        if (this.player != null) {
+            this.player.updateBestTime();
         }
         System.out.println("🎉 ПОБЕДА! 🎉");
     }
 
     public void loseGame() {
-        state = 2;
-        timer.pause();
-        board.revealAllBombs();
-        if (player != null) {
-            player.addMistake();
+        this.state = 2;
+        this.timer.pause();
+        this.board.revealAllBombs();
+        if (this.player != null) {
+            this.player.addMistake();
         }
         System.out.println("💥 ПРОИГРЫШ! 💥");
     }
 
     public boolean isGameRunning() {
-        return state == 0;
+        return this.state == 0;
     }
 
     public int getGameTime() {
-        return timer.getElapsedTime();
+        return this.timer.getElapsedTime();
     }
 
     public void pauseGame() {
-        timer.pause();
+        this.timer.pause();
         System.out.println("Игра на паузе");
     }
 
     public void resumeGame() {
-        timer.resume();
+        this.timer.resume();
         System.out.println("Игра продолжается");
     }
 
     public void makeMove(int x, int y, boolean isFlag) {
-        if (!isGameRunning()) return;
+        if (!this.isGameRunning()) return;
 
-        Cell cell = board.getCell(x, y);
+        Cell cell = this.board.getCell(x, y);
         if (cell == null) {
             System.out.println("Неверные координаты!");
             return;
@@ -101,25 +100,24 @@ System.out.println("=== СОСТОЯНИЕ ИГРЫ ===");
                 return;
             }
 
-            // Если бомбы еще не расставлены, расставляем их (первый ход всегда безопасен)
-            if (!board.areBombsPlaced()) {
-                board.placeBombs(x, y);
+            if (!this.board.areBombsPlaced()) {
+                this.board.placeBombs(x, y);
             }
 
             if (cell.getIsBomb()) {
-                loseGame();
+                this.loseGame();
             } else {
-                board.openArea(x, y);
-                player.addOpenedCell();
+                this.board.openArea(x, y);
+                this.player.addOpenedCell();
                 
-                if (board.isGameWon()) {
-                    winGame();
+                if (this.board.isGameWon()) {
+                    this.winGame();
                 }
             }
         }
     }
 
-    public int getState() { return state; }
-    public Board getBoard() { return board; }
-    public Player getPlayer() { return player; }
+    public int getState() { return this.state; }
+    public Board getBoard() { return this.board; }
+    public Player getPlayer() { return this.player; }
 }

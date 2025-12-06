@@ -12,8 +12,8 @@ class SaveManager {
     }
 
     public void print() {
-        System.out.printf("Менеджер сохранений, сохранений: %d%n", saves.size());
-        for (GameSave save : saves) {
+        System.out.printf("Менеджер сохранений, сохранений: %d%n", this.saves.size());
+        for (GameSave save : this.saves) {
             save.print();
         }
     }
@@ -21,24 +21,46 @@ class SaveManager {
     public void inputCreateSave(Scanner scanner) {
         GameSave save = new GameSave("");
         save.inputSaveData(scanner);
-        saves.add(save);
+        this.saves.add(save);
     }
 
     public void createSave(String name) {
-        saves.add(new GameSave(name));
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("Имя сохранения не может быть пустым");
+        }
+        this.saves.add(new GameSave(name));
     }
 
     public boolean loadSave(String name) {
-        for (GameSave save : saves) {
-            if (save.getName().equals(name)) {
-                System.out.println("Загружаем сохранение: " + name);
-                return true;
+        try {
+            if (name == null) {
+                throw new IllegalArgumentException("Имя сохранения не может быть null");
             }
+            
+            for (GameSave save : this.saves) {
+                if (save.getName().equals(name)) {
+                    System.out.println("Загружаем сохранение: " + name);
+                    return true;
+                }
+            }
+            return false;
+        } catch (IllegalArgumentException e) {
+            System.out.println("Ошибка загрузки: " + e.getMessage());
+            return false;
         }
-        return false;
     }
-
-    public void deleteSave(String name) {
-        saves.removeIf(save -> save.getName().equals(name));
+public void deleteSave(String name) {
+        try {
+            if (name == null) {
+                throw new IllegalArgumentException("Имя сохранения не может быть null");
+            }
+            
+            boolean removed = this.saves.removeIf(save -> save.getName().equals(name));
+            if (!removed) {
+                System.out.println("Сохранение не найдено: " + name);
+            }
+        } catch (IllegalArgumentException e) {
+            System.out.println("Ошибка удаления: " + e.getMessage());
+        }
     }
 }

@@ -23,7 +23,7 @@ class HighScore {
 
     public void print() {
         System.out.printf("Рекорд: %s - %d очков, время: %d сек, сложность: %s%n",
-            playerName, score, time, difficulty);
+            this.playerName, this.score, this.time, this.difficulty);
     }
 
     public void inputHighScore(Scanner scanner) {
@@ -38,5 +38,5 @@ class HighScore {
         this.difficulty = scanner.next();
     }
 
-    public int getScore() { return score; }
+    public int getScore() { return this.score; }
 }

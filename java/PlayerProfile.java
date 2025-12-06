@@ -20,8 +20,8 @@ class PlayerProfile {
     }
 
     public void print() {
-        System.out.printf("Профиль игрока: %s%n", player != null ? player.getName() : "нет игрока");
-        System.out.printf("Аватар: %s, Уровень: %d%n", avatar, level);
+        System.out.printf("Профиль игрока: %s%n", this.player != null ? this.player.getName() : "нет игрока");
+        System.out.printf("Аватар: %s, Уровень: %d%n", this.avatar, this.level);
     }
 
     public void inputProfile(Scanner scanner) {
@@ -31,11 +31,11 @@ class PlayerProfile {
     }
 
     public void levelUp() {
-        level++;
-        System.out.printf("Уровень повышен! Текущий уровень: %d%n", level);
+        this.level++;
+        System.out.printf("Уровень повышен! Текущий уровень: %d%n", this.level);
     }
 
     public void setAvatar(String av) {
-        avatar = av;
+        this.avatar = av;
     }
 }

@@ -13,28 +13,28 @@ class HighScoreManager {
 
     public void print() {
         System.out.println("=== ТАБЛИЦА РЕКОРДОВ ===");
-        for (int i = 0; i < highScores.size(); i++) {
+        for (int i = 0; i < this.highScores.size(); i++) {
             System.out.print((i + 1) + ". ");
-            highScores.get(i).print();
+            this.highScores.get(i).print();
         }
     }
 
     public void inputAddScore(Scanner scanner) {
         HighScore score = new HighScore();
         score.inputHighScore(scanner);
-        addScore(score);
+        this.addScore(score);
     }
 
     public void addScore(HighScore score) {
-        highScores.add(score);
-        highScores.sort((a, b) -> Integer.compare(b.getScore(), a.getScore()));
+        this.highScores.add(score);
+        this.highScores.sort((a, b) -> Integer.compare(b.getScore(), a.getScore()));
 
-        if (highScores.size() > 10) {
-            highScores = highScores.subList(0, 10);
+        if (this.highScores.size() > 10) {
+            this.highScores = this.highScores.subList(0, 10);
         }
     }
 
     public void clearScores() {
-        highScores.clear();
+        this.highScores.clear();
     }
 }

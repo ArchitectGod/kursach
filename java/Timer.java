@@ -16,46 +16,46 @@ class Timer {
     }
 
     public void print() {
-        System.out.printf("Таймер: %d секунд, статус: %s%n", getElapsedTime(), isRunning ? "работает" : "на паузе");
+        System.out.printf("Таймер: %d секунд, статус: %s%n", this.getElapsedTime(), this.isRunning ? "работает" : "на паузе");
     }
 
     public void inputStart(Scanner scanner) {
         System.out.print("Запустить таймер? (1-да, 0-нет): ");
         int choice = scanner.nextInt();
         if (choice == 1) {
-            start();
+            this.start();
         }
     }
 
     public void start() {
-        startTime = System.currentTimeMillis() / 1000;
-        isRunning = true;
+        this.startTime = System.currentTimeMillis() / 1000;
+        this.isRunning = true;
     }
 
     public void pause() {
-        if (isRunning) {
-            pausedTime = System.currentTimeMillis() / 1000;
-            isRunning = false;
+        if (this.isRunning) {
+            this.pausedTime = System.currentTimeMillis() / 1000;
+            this.isRunning = false;
         }
     }
 
     public void resume() {
-        if (!isRunning) {
-            startTime += (System.currentTimeMillis() / 1000 - pausedTime);
-            isRunning = true;
+        if (!this.isRunning) {
+            this.startTime += (System.currentTimeMillis() / 1000 - this.pausedTime);
+            this.isRunning = true;
         }
     }
 
     public int getElapsedTime() {
-        if (isRunning) {
-            return (int)(System.currentTimeMillis() / 1000 - startTime);
+        if (this.isRunning) {
+            return (int)(System.currentTimeMillis() / 1000 - this.startTime);
         }
-        return (int)(pausedTime - startTime);
+        return (int)(this.pausedTime - this.startTime);
     }
 
     public void reset() {
-        startTime = 0;
-        pausedTime = 0;
-        isRunning = false;
+        this.startTime = 0;
+        this.pausedTime = 0;
+        this.isRunning = false;
     }
 }
