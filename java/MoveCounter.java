@@ -2,85 +2,67 @@ import java.util.*;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.lang.reflect.*;
 
-// 35. Счётчик ходов
-class MoveCounter {
-    private int totalMoves;
-    private int safeMoves;
-    private int flagMoves;
-    private int bombMoves;
-
+class MoveCounter extends Schitatel {
+    private int vsegoHodov;
+    private int bezopasnyeHody;
+    private int flagHody;
+    private int bombHody;
+    
     public MoveCounter() {
-        this.totalMoves = 0;
-        this.safeMoves = 0;
-        this.flagMoves = 0;
-        this.bombMoves = 0;
-    }
-
-    public void print() {
-        System.out.println("=== СТАТИСТИКА ХОДОВ ===");
-        System.out.println("Всего ходов: " + this.totalMoves);
-        System.out.println("Безопасных ходов: " + this.safeMoves);
-        System.out.println("Установок флагов: " + this.flagMoves);
-        System.out.println("Ходов на бомбах: " + this.bombMoves);
-
-        if (this.totalMoves > 0) {
-            System.out.printf("Процент безопасных: %.1f%%%n", (float)this.safeMoves / this.totalMoves * 100);
-            System.out.printf("Процент ошибок: %.1f%%%n", (float)this.bombMoves / this.totalMoves * 100);
-        }
-    }
-
-    public void inputReset(Scanner scanner) {
-        System.out.print("Сбросить статистику? (1-да, 0-нет): ");
-        int choice = scanner.nextInt();
-        if (choice == 1) {
-            this.reset();
-            System.out.println("Статистика сброшена!");
-        }
-    }
-
-    public void addSafeMove() {
-        this.totalMoves++;
-        this.safeMoves++;
-        System.out.println("+1 безопасный ход");
-    }
-
-    public void addFlagMove() {
-        this.totalMoves++;
-        this.flagMoves++;
-        System.out.println("+1 установка флага");
-    }
-
-    public void addBombMove() {
-        this.totalMoves++;
-        this.bombMoves++;
-        System.out.println("+1 ход на бомбе (ОШИБКА!)");
-    }
-public void reset() {
-        this.totalMoves = 0;
-        this.safeMoves = 0;
-        this.flagMoves = 0;
-        this.bombMoves = 0;
-    }
-
-    public int getTotalMoves() { return this.totalMoves; }
-    public int getSafeMoves() { return this.safeMoves; }
-    public int getFlagMoves() { return this.flagMoves; }
-    public int getBombMoves() { return this.bombMoves; }
-
-    public float getSuccessRate() {
-        if (this.totalMoves == 0) return 0.0f;
-        return (float)this.safeMoves / this.totalMoves * 100;
-    }
-}
-
-// Класс для демонстрации обработки исключений
-class GameException extends Exception {
-    public GameException(String message) {
-        super(message);
+        super("Счетчик ходов");
+        this.vsegoHodov = 0;
+        this.bezopasnyeHody = 0;
+        this.flagHody = 0;
+        this.bombHody = 0;
     }
     
-    public GameException(String message, Throwable cause) {
-        super(message, cause);
+    public void print() {
+        System.out.println("=== СТАТИСТИКА ХОДОВ ===");
+        System.out.println("Тип счетчика: " + getTipSchetchika());
+        System.out.println("Всего ходов: " + vsegoHodov);
+        System.out.printf("Безопасные: %d, Флаги: %d, Бомбы: %d%n", 
+                         bezopasnyeHody, flagHody, bombHody);
+    }
+    
+    @Override
+    public void sbrosit() {
+        super.sbrosit();
+        vsegoHodov = 0;
+        bezopasnyeHody = 0;
+        flagHody = 0;
+        bombHody = 0;
+        System.out.println("Счетчик ходов сброшен");
+    }
+    
+    @Override
+    public void pokazatTekushee() {
+        System.out.println("Текущее состояние счетчика: " + vsegoHodov + " ходов");
+    }
+    
+    public void dobavitBezopasniyHod() {
+        vsegoHodov++;
+        bezopasnyeHody++;
+    }
+    
+    public void dobavitFlagHod() {
+        vsegoHodov++;
+        flagHody++;
+    }
+    
+    public void dobavitBombHod() {
+        vsegoHodov++;
+        bombHody++;
+    }
+    
+    public int getVsegoHodov() { return vsegoHodov; }
+    public int getBezopasnyeHody() { return bezopasnyeHody; }
+    public int getFlagHody() { return flagHody; }
+    public int getBombHody() { return bombHody; }
+    
+    public float getEffectiveness() {
+        if (vsegoHodov == 0) return 0.0f;
+        return (float)bezopasnyeHody / vsegoHodov * 100.0f;
     }
 }

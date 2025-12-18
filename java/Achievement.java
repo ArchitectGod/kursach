@@ -2,33 +2,41 @@ import java.util.*;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.lang.reflect.*;
 
-// 23. Достижение
-class Achievement {
-    private String title;
-    private String description;
+class Achievement extends Rekordsmen {
     private boolean unlocked;
-
-    public Achievement(String t, String desc) {
-        this.title = t;
-        this.description = desc;
+    private String description;
+    
+    public Achievement(String category, String desc, int year) {
+        super(category, year, "Игрок");
         this.unlocked = false;
+        this.description = desc;
     }
-
+    
+    public Achievement(String category, String desc) {
+        this(category, desc, 2024);
+    }
+    
     public void print() {
-        System.out.printf("Достижение: %s - %s [%s]%n", this.title, this.description,
-            this.unlocked ? "РАЗБЛОКИРОВАНО" : "заблокировано");
+        System.out.printf("Достижение: %s - %s [%s]%n", 
+                         getKategoriyaSorevnovaniya(), 
+                         description, 
+                         unlocked ? "РАЗБЛОКИРОВАНО" : "заблокировано");
     }
-public void inputUnlock(Scanner scanner) {
-        System.out.printf("Разблокировать достижение '%s'? (1-да, 0-нет): ", this.title);
-        int choice = scanner.nextInt();
-        if (choice == 1) this.unlock();
+    
+    @Override
+    public void zaregistrirovatPobedu() {
+        unlocked = true;
+        System.out.println("Достижение разблокировано: " + getKategoriyaSorevnovaniya());
     }
-
-    public void unlock() {
-        this.unlocked = true;
-        System.out.printf("🎊 Достижение разблокировано: %s! 🎊%n", this.title);
+    
+    @Override
+    public void pokazatRezultat() {
+        System.out.printf("Рекорд в категории '%s': %s%n", 
+                         getKategoriyaSorevnovaniya(), description);
     }
-
-    public boolean isUnlocked() { return this.unlocked; }
+    
+    public boolean isUnlocked() { return unlocked; }
+    public String getDescription() { return description; }
 }

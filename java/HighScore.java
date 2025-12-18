@@ -2,41 +2,29 @@ import java.util.*;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.lang.reflect.*;
 
-// 31. Рекорд
-class HighScore {
-    private String playerName;
-    private int score;
-    private int time;
-    private String difficulty;
-
-    public HighScore(String name, int s, int t, String diff) {
-        this.playerName = name;
-        this.score = s;
-        this.time = t;
-        this.difficulty = diff;
+class HighScore extends Rekordsmen {
+    private String imyaIgroka;
+    private int rezultat;
+    
+    public HighScore(String playerName, int result, String category, int year) {
+super(category, year, playerName);
+        this.imyaIgroka = playerName;
+        this.rezultat = result;
     }
     
-    public HighScore() {
-        this("", 0, 0, "");
+    public HighScore(String playerName, int result) {
+        this(playerName, result, "Время", 2024);
     }
-
+    
     public void print() {
-        System.out.printf("Рекорд: %s - %d очков, время: %d сек, сложность: %s%n",
-            this.playerName, this.score, this.time, this.difficulty);
+        System.out.printf("Рекорд: %s - %d", imyaIgroka, rezultat);
+        if (getKategoriyaSorevnovaniya().equals("Время")) System.out.print(" сек");
+        System.out.printf(", Категория: %s, Год: %d%n", 
+                         getKategoriyaSorevnovaniya(), getGodUstanovkiRekorda());
     }
-
-    public void inputHighScore(Scanner scanner) {
-        System.out.println("Введите данные рекорда:");
-        System.out.print("Имя: ");
-        this.playerName = scanner.next();
-        System.out.print("Очки: ");
-        this.score = scanner.nextInt();
-        System.out.print("Время (сек): ");
-        this.time = scanner.nextInt();
-        System.out.print("Сложность: ");
-        this.difficulty = scanner.next();
-    }
-
-    public int getScore() { return this.score; }
+    
+    public int getRezultat() { return rezultat; }
+    public String getImyaIgroka() { return imyaIgroka; }
 }

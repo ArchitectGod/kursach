@@ -2,26 +2,28 @@ import java.util.*;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.lang.reflect.*;
 
-// 20. Уведомитель
-class Notifier {
+class Notifier extends Elektropribor {
+    public Notifier() {
+        super("Уведомитель");
+    }
+    
     public void print() {
-        System.out.println("Система уведомлений");
+        System.out.printf("Система уведомлений: %s%n", getTipUstroystva());
     }
-
+    
+    @Override
+    public void vkluchit() {
+        super.vkluchit(); // Вызов метода базового класса
+        System.out.println("Уведомления включены");
+    }
+    
     public void showWinMessage() {
-        System.out.println("🎉 ПОЗДРАВЛЯЕМ! ВЫ ВЫИГРАЛИ! 🎉");
+        izdatZvuk("🎉 ПОЗДРАВЛЯЕМ! ВЫ ВЫИГРАЛИ! 🎉");
     }
-
+    
     public void showLoseMessage() {
-        System.out.println("💥 ВЫ ПРОИГРАЛИ! ПОПРОБУЙТЕ ЕЩЕ РАЗ! 💥");
-    }
-
-    public void showErrorMessage(String message) {
-        System.out.println("❌ ОШИБКА: " + message);
-    }
-
-    public void showInfoMessage(String message) {
-        System.out.println("ℹ️  ИНФО: " + message);
+        izdatZvuk("💥 ВЫ ПРОИГРАЛИ! ПОПРОБУЙТЕ ЕЩЕ РАЗ! 💥");
     }
 }

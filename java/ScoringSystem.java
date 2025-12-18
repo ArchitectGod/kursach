@@ -2,45 +2,34 @@ import java.util.*;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.lang.reflect.*;
 
-// 18. Система очков
-class ScoringSystem {
+class ScoringSystem extends Schitatel {
     private int baseScore;
     private int timeBonus;
     private int mistakePenalty;
-
+    
     public ScoringSystem() {
+        super("Система очков");
         this.baseScore = 1000;
         this.timeBonus = 50;
         this.mistakePenalty = 100;
     }
-
+    
     public void print() {
-        System.out.println("Система подсчета очков");
-        System.out.printf("Базовые очки: %d, Бонус за время: %d, Штраф за ошибку: %d%n",
-            this.baseScore, this.timeBonus, this.mistakePenalty);
+        System.out.printf("Система подсчета очков: %s%n", getTipSchetchika());
     }
-
-    public void inputScoringParams(Scanner scanner) {
-        System.out.println("Введите параметры подсчета очков:");
-        System.out.print("Базовые очки: ");
-        this.baseScore = scanner.nextInt();
-        System.out.print("Бонус за время: ");
-        this.timeBonus = scanner.nextInt();
-        System.out.print("Штраф за ошибку: ");
-        this.mistakePenalty = scanner.nextInt();
+    
+    @Override
+    public void sbrosit() {
+        super.sbrosit(); // Вызов метода базового класса
+        System.out.println("Система очков сброшена");
     }
-
+    
     public int calculateScore(Player player, int gameTime) {
-        int score = this.baseScore;
-        score += (3600 - gameTime) / 60 * this.timeBonus;
-        score -= player.getMistakes() * this.mistakePenalty;
-        return Math.max(score, 0);
-    }
-
-    public int calculateWinScore(boolean won, int time, int mistakes) {
-        if (!won) return 0;
-        int score = this.baseScore + (1800 - time) / 30 * this.timeBonus - mistakes * this.mistakePenalty;
+        int score = baseScore;
+        score += (3600 - gameTime) / 60 * timeBonus;
+        score -= player.getMistakes() * mistakePenalty;
         return Math.max(score, 0);
     }
 }

@@ -2,8 +2,8 @@ import java.util.*;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.lang.reflect.*;
 
-// 10. Класс меню
 class Menu {
     public void print() {
         System.out.println("=== ГЛАВНОЕ МЕНЮ ===");
@@ -13,7 +13,7 @@ class Menu {
         System.out.println("4. Таблица лидеров");
         System.out.println("5. Выход");
     }
-
+    
     public int getChoice(Scanner scanner) {
         System.out.print("Выберите вариант: ");
         return scanner.nextInt();

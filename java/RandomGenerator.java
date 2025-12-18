@@ -2,34 +2,27 @@ import java.util.*;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.lang.reflect.*;
 
-// 12. Рандомайзер
 class RandomGenerator {
     private Random random;
-
+    private int seed;
+    
     public RandomGenerator() {
-        this.random = new Random();
+        this.seed = (int)System.currentTimeMillis();
+        this.random = new Random(seed);
     }
-
+    
     public RandomGenerator(int seed) {
+        this.seed = seed;
         this.random = new Random(seed);
     }
-
+    
     public void print() {
-        System.out.println("Генератор случайных чисел");
+        System.out.printf("Генератор случайных чисел, seed: %d%n", seed);
     }
-
-    public void inputSeed(Scanner scanner) {
-        System.out.print("Введите seed для генератора: ");
-        int seed = scanner.nextInt();
-        this.random = new Random(seed);
-    }
-
+    
     public int getRandom(int min, int max) {
-        return min + this.random.nextInt(max - min + 1);
-    }
-
-    public Coordinate getRandomCoordinate(int maxX, int maxY) {
-        return new Coordinate(this.getRandom(0, maxX - 1), this.getRandom(0, maxY - 1));
+        return min + random.nextInt(max - min + 1);
     }
 }

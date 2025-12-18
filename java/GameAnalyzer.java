@@ -2,31 +2,33 @@ import java.util.*;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.lang.reflect.*;
 
-// 30. Анализатор игры
-class GameAnalyzer {
+class GameAnalyzer extends Schitatel {
+    private int analyzedGames;
+    
+    public GameAnalyzer() {
+        super("Анализатор игр");
+        this.analyzedGames = 0;
+    }
+    
     public void print() {
-        System.out.println("Анализатор игрового процесса");
+        System.out.printf("Анализатор игрового процесса: %s%n", getTipSchetchika());
+        System.out.println("Проанализировано игр: " + analyzedGames);
     }
-
+    
+    @Override
+    public void sbrosit() {
+        super.sbrosit();
+        analyzedGames = 0;
+        System.out.println("Анализатор сброшен");
+    }
+    
     public void analyzeBoard(Board board) {
-        int flaggedBombs = 0;
-        int totalBombs = board.getTotalBombs();
-
-        System.out.printf("Анализ поля: бомб %d, безопасных клеток осталось: %d%n",
-            totalBombs, board.getSafeCellsLeft());
-    }
-
-    public void analyzePlayer(Player player) {
-        System.out.printf("Анализ игрока: %s%n", player.getName());
-        System.out.printf("Эффективность: %.1f%%%n",
-            player.getOpenedCells() > 0 ?
-            (float)(player.getOpenedCells() - player.getMistakes()) / player.getOpenedCells() * 100 : 0);
-    }
-
-    public void analyzeGame(Game game) {
-        System.out.println("Анализ игры:");
-        System.out.println("Статус: " + (game.isGameRunning() ? "в процессе" : (game.getState() == 1 ? "победа" : "поражение")));
-        System.out.println("Время: " + game.getGameTime() + " сек");
+        analyzedGames++;
+        System.out.printf("Анализ поля %dx%d:%n", board.getWidth(), board.getHeight());
+        System.out.println("Количество бомб: " + board.getTotalBombs());
+        System.out.printf("Плотность бомб: %.1f%%%n", 
+                         (float)board.getTotalBombs() / (board.getWidth() * board.getHeight()) * 100);
     }
 }

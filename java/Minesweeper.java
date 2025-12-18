@@ -2,193 +2,168 @@ import java.util.*;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.lang.reflect.*;
 
-// Главный класс
 public class Minesweeper {
     
-public static void demonstrateExceptionHandling(Scanner scanner) {
-    System.out.println("\n=== ДЕМОНСТРАЦИЯ ОБРАБОТКИ ИСКЛЮЧЕНИЙ ===");
-    
-    
-	try {
-		GameFactory factory = GameFactory.getInstance();
-		Game game = factory.createCustomGame("", 0, 0, 0);
-	} catch (IllegalArgumentException e) {
-		System.out.println("Перехвачено исключение: " + e.getMessage());
-	}
-	
-	try {
-		int[] array = new int[5];
-		System.out.println(array[10]);
-	} catch (ArrayIndexOutOfBoundsException e) {
-		System.out.println("Ошибка индекса массива: " + e.getMessage());
-	} catch (Exception e) {
-		System.out.println("Общая ошибка: " + e.getMessage());
-	}
-	
-	try {
-		System.out.print("Введите число: ");
-		int number = scanner.nextInt();
-		System.out.println("Вы ввели: " + number);
-		scanner.nextLine(); // Очистка буфера
-	} catch (InputMismatchException e) {
-		System.out.println("Ошибка: введено не число!");
-		scanner.nextLine(); // Очистка некорректного ввода
-	}
-	
-	try {
-		System.out.print("Введите текст: ");
-		String text = scanner.nextLine();
-		System.out.println("Вы ввели: " + text);
-	} catch (Exception e) {
-		System.out.println("Ошибка: " + e.getMessage());
-	}
- 
-    
-    System.out.println("=== ДЕМОНСТРАЦИЯ ЗАВЕРШЕНА ===\n");
-}
-    
-    public static void demonstrateStaticFeatures() {
-        System.out.println("\n=== ДЕМОНСТРАЦИЯ СТАТИЧЕСКИХ ФИЧ ===");
+    // Демонстрация виртуальных методов
+    public static void demonstrateVirtualMethods() {
+        System.out.println("\n=== ДЕМОНСТРАЦИЯ ВИРТУАЛЬНЫХ МЕТОДОВ ===");
         
-        System.out.println("Создано досок до создания: " + Board.getBoardsCreated());
+        // Создаем объекты
+        Coordinate coord1 = new Coordinate(1, 1);
+        Coordinate coord2 = new Coordinate(2, 2) {
+            @Override
+            public void virtualMethodDemo() {
+                System.out.println("Виртуальный метод Coordinate: переопределенная реализация");
+            }
+        };
         
-        Board board1 = new Board(5, 5, 5);
-        Board board2 = new Board(6, 6, 6);
-        
-        System.out.println("Создано досок после создания двух: " + Board.getBoardsCreated());
-        
-        GameFactory factory1 = GameFactory.getInstance();
-        GameFactory factory2 = GameFactory.getInstance();
-        
-        System.out.println("Фабрики одинаковы: " + (factory1 == factory2));
-        
-        System.out.println("=== ДЕМОНСТРАЦИЯ ЗАВЕРШЕНА ===\n");
+        // Вызов через базовый класс (в Java все методы виртуальные)
+        System.out.println("Вызов виртуального метода:");
+        coord1.virtualMethodDemo();
+        coord2.virtualMethodDemo();
     }
-
-    public static void demonstrateGame() {
-        System.out.println("=== ДЕМОНСТРАЦИЯ САПЕРА ===\n");
-
-        Player player = new Player("Тестовый Игрок");
-        Board board = new Board(8, 8, 10);
-        Game game = new Game(board, player);
-
-        System.out.println("1. Начальное состояние:");
-        game.print();
-
-        System.out.println("\n2. Делаем несколько ходов:");
-        board.placeBombs(0, 0);
-        game.makeMove(0, 0, false);
-        game.makeMove(1, 1, false);
-        game.makeMove(2, 2, true);
-
-        System.out.println("\n3. Состояние после ходов:");
-        game.print();
-
-        System.out.println("\n4. Демонстрация других систем:");
-        Settings settings = new Settings();
-        settings.print();
-MoveCounter counter = new MoveCounter();
-        counter.addSafeMove();
-        counter.addFlagMove();
-        counter.addBombMove();
-        counter.print();
-
-        HelpSystem help = new HelpSystem();
-        help.showTips();
-
-        System.out.println("\n=== ДЕМОНСТРАЦИЯ ЗАВЕРШЕНА ===\n");
-    }
-
-    public static void main(String[] args) {
-        try {
-            Locale.setDefault(Locale.forLanguageTag("ru-RU"));
-        } catch (Exception e) {
-            System.out.println("Ошибка установки локали: " + e.getMessage());
-        }
-
-        System.out.println("=== САПЕР НА JAVA ===");
-        System.out.println("35 классов, полная объектно-ориентированная реализация\n");
-		
-		Scanner scanner = new Scanner(System.in);
-		
-        demonstrateStaticFeatures();
-        demonstrateExceptionHandling(scanner);
-        demonstrateGame();
-
+    
+    // Демонстрация protected модификатора
+    public static void demonstrateProtected() {
+        System.out.println("\n=== ДЕМОНСТРАЦИЯ МОДИФИКАТОРА PROTECTED ===");
         
-        Menu menu = new Menu();
+        Geografiya geo = new Geografiya("Тестовый регион", 3);
+        
+        // Нельзя напрямую получить доступ к protected полю razvedeno
+        // но можно через публичный метод
+        System.out.println("Доступ к protected полю через публичный метод:");
+        System.out.println("Разведано: " + geo.getRazvedeno());
+        
+        // Демонстрация protected метода в производном классе
+        Coordinate coord = new Coordinate(3, 3);
+        coord.issledovatTerritoriyu(); // Вызывает переопределенный метод
+    }
+    
+    // Демонстрация клонирования
+    public static void demonstrateCloning() {
+        System.out.println("\n=== ДЕМОНСТРАЦИЯ КЛОНИРОВАНИЯ ===");
         
         try {
-            menu.print();
-            int choice = menu.getChoice(scanner);
-
-            System.out.println("Выбран вариант: " + choice);
+            Coordinate original = new Coordinate(5, 5, "Оригинал", 2, true);
             
-            switch (choice) {
-                case 1: {
-                    try {
-                        GameFactory factory = GameFactory.getInstance();
-                        Player player = new Player("Игрок");
-                        Board board = new Board(9, 9, 10);
-                        Game game = new Game(board, player);
-                        
-                        System.out.println("\n=== НАЧАЛО ИГРЫ ===");
-                        game.print();
-                        
-                        board.placeBombs(0, 0);
-                        game.makeMove(0, 0, false);
-                        game.makeMove(1, 1, false);
-                        game.makeMove(2, 2, true);
-                        
-                        game.print();
-                    } catch (Exception e) {
-                        System.out.println("Ошибка создания игры: " + e.getMessage());
-                    }
-                    break;
-                }
-                case 2:
-                    System.out.println("Загрузка игры...");
-                    try {
-                        SaveManager saveManager = new SaveManager();
-                        saveManager.print();
-                    } catch (Exception e) {
-                        System.out.println("Ошибка загрузки: " + e.getMessage());
-                    }
-                    break;
-                case 3: {
-                    try {
-                        Settings settings = new Settings();
-                        settings.inputSettings(scanner);
-                        settings.print();
-                    } catch (Exception e) {
-                        System.out.println("Ошибка в настройках: " + e.getMessage());
-                    }
-                    break;
-                }
-                case 4: {
-                    try {
-                        HighScoreManager hsManager = new HighScoreManager();
-                        hsManager.print();
-                    } catch (Exception e) {
-                        System.out.println("Ошибка загрузки рекордов: " + e.getMessage());
-                    }
-                    break;
-                }
-                case 5:
-                    System.out.println("Выход из игры.");
-                    break;
-                default:
-                    System.out.println("Неверный выбор!");
-            }
-        } catch (Exception e) {
-            System.out.println("Критическая ошибка: " + e.getMessage());
-            e.printStackTrace();
-        } finally {
-            if (scanner != null) {
-                scanner.close();
-                System.out.println("Ресурсы освобождены");
-            }
+            // Поверхностное клонирование
+            Coordinate shallowCopy = (Coordinate) original.clone();
+            System.out.println("Поверхностное клонирование:");
+            original.print();
+            shallowCopy.print();
+			// Глубокое клонирование
+            Coordinate deepCopy = original.deepClone();
+            System.out.println("Глубокое клонирование:");
+            deepCopy.print();
+            
+            // Изменяем оригинал
+            original.setX(10);
+            System.out.println("После изменения оригинала:");
+            original.print();
+            System.out.print("Поверхностная копия: ");
+            shallowCopy.print();
+            System.out.print("Глубокая копия: ");
+            deepCopy.print();
+            
+        } catch (CloneNotSupportedException e) {
+            System.out.println("Ошибка клонирования: " + e.getMessage());
         }
-     }
+    }
+    
+    // Демонстрация наследования и перегрузки методов
+    public static void demonstrateInheritance() {
+        System.out.println("\n=== ДЕМОНСТРАЦИЯ НАСЛЕДОВАНИЯ И ПЕРЕГРУЗКИ ===");
+        
+        // Создаем объекты разных классов с наследованием
+        Coordinate coord = new Coordinate(7, 7, "Горный район", 5, false);
+        GameFactory factory = new GameFactory("Супер-фабрика");
+        SoundSystem sound = new SoundSystem();
+        Achievement achievement = new Achievement("Мастер", "Выиграть 50 игр");
+        MoveCounter counter = new MoveCounter();
+        
+        System.out.println("1. Coordinate (наследует Geografiya):");
+        coord.pokazatInfo(); // Перегруженный метод
+        
+        System.out.println("\n2. GameFactory (наследует Zavod):");
+        factory.zapustitProizvodstvo(); // Перегруженный метод
+        
+        System.out.println("\n3. SoundSystem (наследует Elektropribor):");
+        sound.vkluchit();
+        sound.playClick();
+        
+        System.out.println("\n4. Achievement (наследует Rekordsmen):");
+        achievement.pokazatRezultat(); // Перегруженный метод
+        
+        System.out.println("\n5. MoveCounter (наследует Schitatel):");
+        counter.dobavitBezopasniyHod();
+        counter.dobavitFlagHod();
+        counter.print(); // Собственный метод
+    }
+    
+    // Демонстрация интерфейсов
+    public static void demonstrateInterfaces() {
+        System.out.println("\n=== ДЕМОНСТРАЦИЯ ИНТЕРФЕЙСОВ ===");
+        
+        // Создаем объекты, реализующие интерфейсы
+        Geografiya geo = new Geografiya("Интерфейсный регион", 4);
+        Elektropribor elec = new Elektropribor("Тестовое устройство");
+        Zavod zavod = new Zavod("Тестовый завод");
+        
+        // Работа через интерфейсы
+        AbstractGeografiya abstractGeo = geo;
+        AbstractElektropribor abstractElec = elec;
+        AbstractZavod abstractZavod = zavod;
+        
+        System.out.println("1. Работа через интерфейс AbstractGeografiya:");
+        abstractGeo.pokazatInfo();
+        abstractGeo.issledovatTerritoriyu();
+        
+        System.out.println("\n2. Работа через интерфейс AbstractElektropribor:");
+        abstractElec.vkluchit();
+        abstractElec.izdatZvuk("Тестовый звук");
+        
+        System.out.println("\n3. Работа через интерфейс AbstractZavod:");
+        abstractZavod.zapustitProizvodstvo();
+    }
+    
+    // Демонстрация множественного наследования (Game наследует два интерфейса)
+    public static void demonstrateMultipleInheritance() {
+        System.out.println("\n=== ДЕМОНСТРАЦИЯ МНОЖЕСТВЕННОГО НАСЛЕДОВАНИЯ ===");
+        
+        Board board = new Board(5, 5, 3);
+        Player player = new Player("Тестовый игрок");
+        Game game = new Game(board, player, "Множественный регион");
+        
+        System.out.println("Game наследует два интерфейса:");
+        
+        // Использование как AbstractGeografiya
+        AbstractGeografiya asGeo = game;
+        System.out.println("1. Как AbstractGeografiya:");
+        asGeo.pokazatInfo();
+        asGeo.issledovatTerritoriyu();
+        
+        // Использование как AbstractZavod
+		AbstractZavod asZavod = game;
+        System.out.println("\n2. Как AbstractZavod:");
+        asZavod.zapustitProizvodstvo();
+        
+        System.out.println("\n3. Как обычный Game объект:");
+        game.print();
+    }
+    
+    public static void main(String[] args) {
+        System.out.println("=== ПРОГРАММА САПЁР НА JAVA ===");
+        
+        // Демонстрация всех возможностей
+        demonstrateProtected();
+        demonstrateVirtualMethods();
+        demonstrateCloning();
+        demonstrateInheritance();
+        demonstrateInterfaces();
+        demonstrateMultipleInheritance();
+        
+        System.out.println("\n=== РАБОТА ПРОГРАММЫ ЗАВЕРШЕНА ===");
+    }
 }

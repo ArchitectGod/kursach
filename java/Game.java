@@ -2,122 +2,134 @@ import java.util.*;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.lang.reflect.*;
 
-// 6. Класс игры
-class Game {
+class Game implements AbstractGeografiya, AbstractZavod {
     private Board board;
     private Player player;
     private int state;
     private Timer timer;
-public Game(Board b, Player p) {
-        this.board = b;
-        this.player = p;
+    private String nazvanieRegiona;
+    private int urovenOpasnosti;
+    private String nazvanieZavoda;
+    private boolean razvedeno;
+    
+    public Game(Board board, Player player, String region) {
+        this.board = board;
+        this.player = player;
         this.state = 0;
         this.timer = new Timer();
-        this.timer.start();
+        this.nazvanieRegiona = region;
+        this.urovenOpasnosti = 1;
+        this.nazvanieZavoda = "Игровая фабрика";
+        this.razvedeno = false;
+        timer.start();
     }
-
+    
+    public Game(Board board, Player player) {
+        this(board, player, "Игровая зона");
+    }
+    
     public void print() {
         System.out.println("=== СОСТОЯНИЕ ИГРЫ ===");
+        System.out.println("Регион: " + nazvanieRegiona);
         System.out.print("Статус: ");
-        switch (this.state) {
+        switch (state) {
             case 0: System.out.println("В процессе"); break;
             case 1: System.out.println("ПОБЕДА!"); break;
             case 2: System.out.println("ПРОИГРЫШ"); break;
         }
-        System.out.printf("Время игры: %d сек%n", this.getGameTime());
-        if (this.board != null) this.board.print();
-        if (this.player != null) this.player.print();
+        System.out.printf("Время игры: %d сек%n", getGameTime());
+        if (board != null) board.print();
+        if (player != null) player.print();
     }
-
-    public void inputGameSettings(Scanner scanner) {
-        System.out.println("=== НАСТРОЙКИ ИГРЫ ===");
-        if (this.board != null) {
-            this.board.inputBoardSize(scanner);
-        }
-        if (this.player != null) {
-            this.player.inputPlayerInfo(scanner);
+    
+    // Реализация методов интерфейса AbstractGeografiya
+@Override
+    public void issledovatTerritoriyu() {
+        System.out.println("Исследование игровой территории: " + nazvanieRegiona);
+        razvedeno = true;
+    }
+    
+    @Override
+    public void pokazatInfo() {
+        System.out.printf("Игра в регионе: %s, Опасность: %d%n", 
+                         nazvanieRegiona, urovenOpasnosti);
+    }
+    
+    @Override
+    public String getNazvanieRegiona() { return nazvanieRegiona; }
+    
+    @Override
+    public int getUrovenOpasnosti() { return urovenOpasnosti; }
+    
+    @Override
+    public void izmenitOpasnost(int novayaOpasnost) {
+        if (novayaOpasnost >= 0 && novayaOpasnost <= 10) {
+            urovenOpasnosti = novayaOpasnost;
         }
     }
-
+    
+    // Реализация методов интерфейса AbstractZavod
+    @Override
+    public void zapustitProizvodstvo() {
+        System.out.println("Запуск производства игр: " + nazvanieZavoda);
+    }
+    
+    @Override
+    public void ostanovitProizvodstvo() {
+        System.out.println("Остановка производства игр: " + nazvanieZavoda);
+    }
+    
+    @Override
+    public String getNazvanieZavoda() { return nazvanieZavoda; }
+    
     public void winGame() {
-        this.state = 1;
-        this.timer.pause();
-        if (this.player != null) {
-            this.player.updateBestTime();
+        state = 1;
+        if (player != null) {
+            int gameTime = getGameTime();
+            player.setTimeSpent(gameTime);
         }
-        System.out.println("🎉 ПОБЕДА! 🎉");
     }
-
+    
     public void loseGame() {
-        this.state = 2;
-        this.timer.pause();
-        this.board.revealAllBombs();
-        if (this.player != null) {
-            this.player.addMistake();
+        state = 2;
+        if (player != null) {
+            player.addMistake();
         }
-        System.out.println("💥 ПРОИГРЫШ! 💥");
     }
-
+    
     public boolean isGameRunning() {
-        return this.state == 0;
+        return state == 0;
     }
-
+    
     public int getGameTime() {
-        return this.timer.getElapsedTime();
+        return timer.getElapsedTime();
     }
-
+    
     public void pauseGame() {
-        this.timer.pause();
-        System.out.println("Игра на паузе");
+        timer.pause();
     }
-
+    
     public void resumeGame() {
-        this.timer.resume();
-        System.out.println("Игра продолжается");
+        timer.resume();
     }
-
-    public void makeMove(int x, int y, boolean isFlag) {
-        if (!this.isGameRunning()) return;
-
-        Cell cell = this.board.getCell(x, y);
-        if (cell == null) {
-            System.out.println("Неверные координаты!");
-            return;
-        }
-
-        if (isFlag) {
-            cell.toggleFlag();
-            System.out.println(cell.getIsFlag() ? "Флаг установлен" : "Флаг снят");
-        } else {
-            if (cell.getIsFlag()) {
-                System.out.println("Сначала снимите флаг!");
-                return;
-            }
-
-            if (cell.getIsOpen()) {
-                System.out.println("Клетка уже открыта!");
-                return;
-            }
-
-            if (!this.board.areBombsPlaced()) {
-                this.board.placeBombs(x, y);
-            }
-
+    
+    public void makeMove(int x, int y) {
+        if (!isGameRunning() || board == null) return;
+        
+        Cell cell = board.getCell(x, y);
+        if (cell != null && !cell.getIsOpen()) {
+            cell.open();
+            player.addOpenedCell();
+            
             if (cell.getIsBomb()) {
-                this.loseGame();
-            } else {
-                this.board.openArea(x, y);
-                this.player.addOpenedCell();
-                
-                if (this.board.isGameWon()) {
-                    this.winGame();
-                }
+                loseGame();
             }
         }
     }
-
-    public int getState() { return this.state; }
-    public Board getBoard() { return this.board; }
-    public Player getPlayer() { return this.player; }
+    
+    public int getState() { return state; }
+    public Board getBoard() { return board; }
+    public Player getPlayer() { return player; }
 }

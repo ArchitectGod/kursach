@@ -2,67 +2,42 @@ import java.util.*;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.lang.reflect.*;
 
-// 17. Фабрика игр
-class GameFactory {
-    private static GameFactory instance;
+class GameFactory extends Zavod {
+    private Map<String, int[]> poleTemplates;
     
-    public static GameFactory getInstance() {
-        if (instance == null) {
-            instance = new GameFactory();
-        }
-        return instance;
+    public GameFactory(String nazvanie) {
+        super(nazvanie); // Вызов конструктора базового класса
+        this.poleTemplates = new HashMap<>();
+        
+        poleTemplates.put("Легкое", new int[]{9, 9, 10});
+        poleTemplates.put("Среднее", new int[]{16, 16, 40});
+        poleTemplates.put("Сложное", new int[]{30, 16, 99});
     }
     
-    private GameFactory() {}
-
+    public GameFactory() {
+        this("Фабрика игр");
+    }
+    
     public void print() {
-        System.out.println("Фабрика создания игр");
+        System.out.printf("Фабрика игровых полей: %s%n", getNazvanieZavoda());
     }
-
-    public Game createEasyGame(String playerName) {
-        if (playerName == null || playerName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Имя игрока не может быть пустым");
-        }
-        
-        Board board = new Board(9, 9, 10);
-        Player player = new Player(playerName);
-        return new Game(board, player);
+    
+    // Перегрузка метода базового класса
+    @Override
+    public void zapustitProizvodstvo() {
+        super.zapustitProizvodstvo(); // Вызов метода базового класса
+        System.out.println("Производство игровых полей запущено!");
     }
-
-    public Game createMediumGame(String playerName) {
-        if (playerName == null || playerName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Имя игрока не может быть пустым");
-        }
+    
+    public Board createPole(String tip) {
+        zapustitProizvodstvo();
         
-        Board board = new Board(16, 16, 40);
-        Player player = new Player(playerName);
-        return new Game(board, player);
-    }
-
-    public Game createHardGame(String playerName) {
-        if (playerName == null || playerName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Имя игрока не может быть пустым");
+        int[] params = poleTemplates.get(tip);
+        if (params != null) {
+            return new Board(params[0], params[1], params[2]);
         }
-        
-        Board board = new Board(30, 16, 99);
-        Player player = new Player(playerName);
-        return new Game(board, player);
-    }
-
-    public Game createCustomGame(String playerName, int width, int height, int bombs) {
-        if (playerName == null || playerName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Имя игрока не может быть пустым");
-        }
-        if (width <= 0 || height <= 0) {
-            throw new IllegalArgumentException("Размеры поля должны быть положительными");
-        }
-        if (bombs <= 0 || bombs >= width * height) {
-            throw new IllegalArgumentException("Некорректное количество бомб");
-        }
-        
-        Board board = new Board(width, height, bombs);
-        Player player = new Player(playerName);
-        return new Game(board, player);
+        return new Board(9, 9, 10);
     }
 }
