@@ -26,3 +26,17 @@ class RandomGenerator {
         return min + random.nextInt(max - min + 1);
     }
 }
+
+class Renderer {
+    public void print() {
+        System.out.println("Рендерер для отображения игры");
+    }
+    
+    public void renderBoard(Board board) {
+        board.print();
+    }
+    
+    public void renderPlayer(Player player) {
+        player.print();
+    }
+}

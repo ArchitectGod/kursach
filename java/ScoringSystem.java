@@ -10,7 +10,7 @@ class ScoringSystem extends Schitatel {
     private int mistakePenalty;
     
     public ScoringSystem() {
-        super("Система очков");
+        super("Система очков", 0); 
         this.baseScore = 1000;
         this.timeBonus = 50;
         this.mistakePenalty = 100;
@@ -22,7 +22,7 @@ class ScoringSystem extends Schitatel {
     
     @Override
     public void sbrosit() {
-        super.sbrosit(); // Вызов метода базового класса
+        super.sbrosit();
         System.out.println("Система очков сброшена");
     }
     

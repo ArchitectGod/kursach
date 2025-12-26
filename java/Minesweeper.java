@@ -6,11 +6,58 @@ import java.lang.reflect.*;
 
 public class Minesweeper {
     
-    // Демонстрация виртуальных методов
+    public static void demonstrateJavaFeatures() {
+        System.out.println("\n=== ДЕМОНСТРАЦИЯ JAVA FEATURES ===\n");
+        
+        CollectionDemo.demonstrateCollections();
+        
+        System.out.println("\n9. Демонстрация всех шаблонных классов:");
+        
+        try {
+            TemplateZavod<String> tFactory = new TemplateZavod<>("Шаблонный завод", String.class);
+            tFactory.addToQueue("Продукт1");
+            tFactory.addToQueue("Продукт2");
+            System.out.println("Размер очереди производства: " + tFactory.getQueueSize());
+            
+            TemplateElektropribor<String> tDevice = new TemplateElektropribor<>("Шаблонное устройство");
+            tDevice.vkluchit();
+            tDevice.queueSound("Звук1");
+            tDevice.queueSound("Звук2");
+            tDevice.playAllSounds();
+            
+            TemplateRekordsmen<Integer, String> tRecord = new TemplateRekordsmen<>("Шаблонный рекорд", 2024);
+            tRecord.setRecordData(42);
+            tRecord.zaregistrirovatPobedu();
+            
+            List<Zavod> zavodList = Arrays.asList(
+                new Zavod("Завод А"),
+                new Zavod("Завод С"),
+                new Zavod("Завод Б")
+            );
+            ZavodFunctions.sortByNazvanie(zavodList);
+            System.out.println("Отсортированные заводы:");
+            for (Zavod z : zavodList) {
+                System.out.println("  " + z.getNazvanieZavoda());
+            }
+            
+            List<Rekordsmen> rekordsList = Arrays.asList(
+                new Rekordsmen("Скорость", 2023, "Игрок1"),
+                new Rekordsmen("Точность", 2024, "Игрок2"),
+                new Rekordsmen("Выносливость", 2022, "Игрок3")
+            );
+            Rekordsmen best = RekordsmenFunctions.findBestRezultat(rekordsList);
+            if (best != null) {
+                System.out.println("Лучший результат: год " + best.getGodUstanovkiRekorda());
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
     public static void demonstrateVirtualMethods() {
         System.out.println("\n=== ДЕМОНСТРАЦИЯ ВИРТУАЛЬНЫХ МЕТОДОВ ===");
         
-        // Создаем объекты
         Coordinate coord1 = new Coordinate(1, 1);
         Coordinate coord2 = new Coordinate(2, 2) {
             @Override
@@ -19,46 +66,36 @@ public class Minesweeper {
             }
         };
         
-        // Вызов через базовый класс (в Java все методы виртуальные)
         System.out.println("Вызов виртуального метода:");
         coord1.virtualMethodDemo();
         coord2.virtualMethodDemo();
     }
     
-    // Демонстрация protected модификатора
     public static void demonstrateProtected() {
         System.out.println("\n=== ДЕМОНСТРАЦИЯ МОДИФИКАТОРА PROTECTED ===");
         
         Geografiya geo = new Geografiya("Тестовый регион", 3);
-        
-        // Нельзя напрямую получить доступ к protected полю razvedeno
-        // но можно через публичный метод
         System.out.println("Доступ к protected полю через публичный метод:");
         System.out.println("Разведано: " + geo.getRazvedeno());
         
-        // Демонстрация protected метода в производном классе
         Coordinate coord = new Coordinate(3, 3);
-        coord.issledovatTerritoriyu(); // Вызывает переопределенный метод
+        coord.issledovatTerritoriyu();
     }
     
-    // Демонстрация клонирования
     public static void demonstrateCloning() {
         System.out.println("\n=== ДЕМОНСТРАЦИЯ КЛОНИРОВАНИЯ ===");
-        
-        try {
+		try {
             Coordinate original = new Coordinate(5, 5, "Оригинал", 2, true);
             
-            // Поверхностное клонирование
             Coordinate shallowCopy = (Coordinate) original.clone();
             System.out.println("Поверхностное клонирование:");
             original.print();
             shallowCopy.print();
-			// Глубокое клонирование
+            
             Coordinate deepCopy = original.deepClone();
             System.out.println("Глубокое клонирование:");
             deepCopy.print();
             
-            // Изменяем оригинал
             original.setX(10);
             System.out.println("После изменения оригинала:");
             original.print();
@@ -72,11 +109,9 @@ public class Minesweeper {
         }
     }
     
-    // Демонстрация наследования и перегрузки методов
     public static void demonstrateInheritance() {
         System.out.println("\n=== ДЕМОНСТРАЦИЯ НАСЛЕДОВАНИЯ И ПЕРЕГРУЗКИ ===");
         
-        // Создаем объекты разных классов с наследованием
         Coordinate coord = new Coordinate(7, 7, "Горный район", 5, false);
         GameFactory factory = new GameFactory("Супер-фабрика");
         SoundSystem sound = new SoundSystem();
@@ -84,34 +119,31 @@ public class Minesweeper {
         MoveCounter counter = new MoveCounter();
         
         System.out.println("1. Coordinate (наследует Geografiya):");
-        coord.pokazatInfo(); // Перегруженный метод
+        coord.pokazatInfo();
         
         System.out.println("\n2. GameFactory (наследует Zavod):");
-        factory.zapustitProizvodstvo(); // Перегруженный метод
+        factory.zapustitProizvodstvo();
         
         System.out.println("\n3. SoundSystem (наследует Elektropribor):");
         sound.vkluchit();
         sound.playClick();
         
         System.out.println("\n4. Achievement (наследует Rekordsmen):");
-        achievement.pokazatRezultat(); // Перегруженный метод
+        achievement.pokazatRezultat();
         
         System.out.println("\n5. MoveCounter (наследует Schitatel):");
         counter.dobavitBezopasniyHod();
         counter.dobavitFlagHod();
-        counter.print(); // Собственный метод
+        counter.print();
     }
     
-    // Демонстрация интерфейсов
     public static void demonstrateInterfaces() {
         System.out.println("\n=== ДЕМОНСТРАЦИЯ ИНТЕРФЕЙСОВ ===");
         
-        // Создаем объекты, реализующие интерфейсы
         Geografiya geo = new Geografiya("Интерфейсный регион", 4);
         Elektropribor elec = new Elektropribor("Тестовое устройство");
         Zavod zavod = new Zavod("Тестовый завод");
         
-        // Работа через интерфейсы
         AbstractGeografiya abstractGeo = geo;
         AbstractElektropribor abstractElec = elec;
         AbstractZavod abstractZavod = zavod;
@@ -128,7 +160,6 @@ public class Minesweeper {
         abstractZavod.zapustitProizvodstvo();
     }
     
-    // Демонстрация множественного наследования (Game наследует два интерфейса)
     public static void demonstrateMultipleInheritance() {
         System.out.println("\n=== ДЕМОНСТРАЦИЯ МНОЖЕСТВЕННОГО НАСЛЕДОВАНИЯ ===");
         
@@ -138,31 +169,26 @@ public class Minesweeper {
         
         System.out.println("Game наследует два интерфейса:");
         
-        // Использование как AbstractGeografiya
         AbstractGeografiya asGeo = game;
         System.out.println("1. Как AbstractGeografiya:");
         asGeo.pokazatInfo();
         asGeo.issledovatTerritoriyu();
         
-        // Использование как AbstractZavod
-		AbstractZavod asZavod = game;
+        AbstractZavod asZavod = game;
         System.out.println("\n2. Как AbstractZavod:");
         asZavod.zapustitProizvodstvo();
         
         System.out.println("\n3. Как обычный Game объект:");
         game.print();
     }
-    
-    public static void main(String[] args) {
-        System.out.println("=== ПРОГРАММА САПЁР НА JAVA ===");
-        
-        // Демонстрация всех возможностей
+	public static void main(String[] args) {
         demonstrateProtected();
         demonstrateVirtualMethods();
         demonstrateCloning();
         demonstrateInheritance();
         demonstrateInterfaces();
         demonstrateMultipleInheritance();
+        demonstrateJavaFeatures();
         
         System.out.println("\n=== РАБОТА ПРОГРАММЫ ЗАВЕРШЕНА ===");
     }

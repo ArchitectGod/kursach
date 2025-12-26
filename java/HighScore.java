@@ -9,7 +9,7 @@ class HighScore extends Rekordsmen {
     private int rezultat;
     
     public HighScore(String playerName, int result, String category, int year) {
-super(category, year, playerName);
+        super(category, year, playerName);
         this.imyaIgroka = playerName;
         this.rezultat = result;
     }

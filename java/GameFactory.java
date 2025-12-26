@@ -8,7 +8,7 @@ class GameFactory extends Zavod {
     private Map<String, int[]> poleTemplates;
     
     public GameFactory(String nazvanie) {
-        super(nazvanie); // Вызов конструктора базового класса
+super(nazvanie);
         this.poleTemplates = new HashMap<>();
         
         poleTemplates.put("Легкое", new int[]{9, 9, 10});
@@ -24,10 +24,9 @@ class GameFactory extends Zavod {
         System.out.printf("Фабрика игровых полей: %s%n", getNazvanieZavoda());
     }
     
-    // Перегрузка метода базового класса
     @Override
     public void zapustitProizvodstvo() {
-        super.zapustitProizvodstvo(); // Вызов метода базового класса
+        super.zapustitProizvodstvo();
         System.out.println("Производство игровых полей запущено!");
     }
     

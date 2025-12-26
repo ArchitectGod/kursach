@@ -10,10 +10,10 @@ class Coordinate extends Geografiya implements Cloneable {
     private static int totalCoordinates = 0;
     
     public Coordinate(int xCoord, int yCoord, String region, int danger, boolean explored) {
-        super(region, danger); // Вызов конструктора базового класса
+        super(region, danger);
         this.x = xCoord;
         this.y = yCoord;
-        this.setRazvedeno(explored); // Использование protected метода
+        this.setRazvedeno(explored);
         totalCoordinates++;
     }
     
@@ -25,38 +25,35 @@ class Coordinate extends Geografiya implements Cloneable {
         this(0, 0);
     }
     
-    // Перегрузка метода базового класса (с вызовом метода базового класса)
     @Override
     public void pokazatInfo() {
-        super.pokazatInfo(); // Вызов метода базового класса
+        super.pokazatInfo();
         System.out.printf("Координаты: (%d, %d), Разведано: %s%n", 
                           x, y, getRazvedeno() ? "Да" : "Нет");
     }
     
-    // Перегрузка метода базового класса (без вызова метода базового класса)
     @Override
     public void issledovatTerritoriyu() {
-        // Специфичная для координат логика исследования
         if (!getRazvedeno()) {
             setRazvedeno(true);
             System.out.printf("Координата [%d,%d] исследована%n", x, y);
         }
     }
     
-    // Виртуальный метод (в Java все методы виртуальные по умолчанию)
     public void virtualMethodDemo() {
         System.out.println("Виртуальный метод Coordinate: базовая реализация");
     }
     
-    // Поверхностное клонирование
     @Override
     public Object clone() throws CloneNotSupportedException {
-        return super.clone(); // Поверхностное клонирование
+        return super.clone();
     }
     
-    // Глубокое клонирование
     public Coordinate deepClone() {
-        return new Coordinate(this.x, this.y, this.nazvanieRegiona,this.urovenOpasnosti,this.getRazvedeno());
+        return new Coordinate(this.x, this.y, 
+                             this.nazvanieRegiona, 
+                             this.urovenOpasnosti, 
+                             this.getRazvedeno());
     }
     
     public void print() {

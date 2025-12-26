@@ -44,8 +44,7 @@ class Game implements AbstractGeografiya, AbstractZavod {
         if (player != null) player.print();
     }
     
-    // Реализация методов интерфейса AbstractGeografiya
-@Override
+    @Override
     public void issledovatTerritoriyu() {
         System.out.println("Исследование игровой территории: " + nazvanieRegiona);
         razvedeno = true;
@@ -70,7 +69,6 @@ class Game implements AbstractGeografiya, AbstractZavod {
         }
     }
     
-    // Реализация методов интерфейса AbstractZavod
     @Override
     public void zapustitProizvodstvo() {
         System.out.println("Запуск производства игр: " + nazvanieZavoda);
@@ -100,7 +98,7 @@ class Game implements AbstractGeografiya, AbstractZavod {
     }
     
     public boolean isGameRunning() {
-        return state == 0;
+return state == 0;
     }
     
     public int getGameTime() {

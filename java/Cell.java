@@ -33,7 +33,7 @@ class Cell {
         } else if (isFlag) {
             System.out.print("🚩 ФЛАГ");
         } else {
-            System.out.print("⬜ ЗАКРЫТА");
+System.out.print("⬜ ЗАКРЫТА");
         }
         System.out.println();
     }

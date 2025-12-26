@@ -15,7 +15,7 @@ class Notifier extends Elektropribor {
     
     @Override
     public void vkluchit() {
-        super.vkluchit(); // Вызов метода базового класса
+        super.vkluchit();
         System.out.println("Уведомления включены");
     }
     

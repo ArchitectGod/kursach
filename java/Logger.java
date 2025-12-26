@@ -13,7 +13,7 @@ class Logger {
         try {
             this.file = new PrintWriter(new FileWriter(filename, true));
         } catch (IOException e) {
-System.out.println("Ошибка открытия файла: " + filename);
+            System.out.println("Ошибка открытия файла: " + filename);
         }
     }
     

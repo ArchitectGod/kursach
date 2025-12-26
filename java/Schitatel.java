@@ -8,13 +8,17 @@ class Schitatel implements AbstractSchitatel {
     protected String tipSchetchika;
     protected int tekusheeZnachenie;
     
-    public Schitatel(String tip) {
+    public Schitatel(String tip, int initialValue) {
         this.tipSchetchika = tip;
-        this.tekusheeZnachenie = 0;
+        this.tekusheeZnachenie = initialValue;
+    }
+    
+    public Schitatel(String tip) {
+        this(tip, 0);
     }
     
     public Schitatel() {
-        this("Счетчик");
+        this("Счетчик", 0);
     }
     
     @Override

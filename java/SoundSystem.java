@@ -25,7 +25,7 @@ class SoundSystem extends Elektropribor {
     
     @Override
     public void izdatZvuk(String zvuk) {
-if (getVklyuchen()) {
+        if (getVklyuchen()) {
             switch (zvuk) {
                 case "click": System.out.println("[ЗВУК] Клик"); break;
                 case "flag": System.out.println("[ЗВУК] Флаг"); break;

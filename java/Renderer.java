@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.lang.reflect.*;
 
+
 class Renderer {
     public void print() {
         System.out.println("Рендерер для отображения игры");

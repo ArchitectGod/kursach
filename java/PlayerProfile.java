@@ -13,7 +13,7 @@ class PlayerProfile {
         this.player = player;
         this.avatar = avatar;
         this.level = 1;
-    }
+	}
     
     public PlayerProfile(Player player) {
         this(player, "default");

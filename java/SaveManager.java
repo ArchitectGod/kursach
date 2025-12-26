@@ -5,7 +5,7 @@ import java.time.format.DateTimeFormatter;
 import java.lang.reflect.*;
 
 class SaveManager {
-    private List<GameSave> saves;
+	private List<GameSave> saves;
     
     public SaveManager() {
         this.saves = new ArrayList<>();

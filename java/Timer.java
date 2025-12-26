@@ -12,7 +12,7 @@ class Timer {
     public Timer() {
         this.startTime = 0;
         this.pauseTime = 0;
-        this.isRunning = false;
+		this.isRunning = false;
     }
     
     public void print() {

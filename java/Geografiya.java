@@ -7,7 +7,7 @@ import java.lang.reflect.*;
 class Geografiya implements AbstractGeografiya {
     protected String nazvanieRegiona;
     protected int urovenOpasnosti;
-    protected boolean razvedeno; // Демонстрация protected поля
+    protected boolean razvedeno;
     
     public Geografiya(String region, int danger) {
         this.nazvanieRegiona = region;
@@ -23,7 +23,6 @@ class Geografiya implements AbstractGeografiya {
     public void issledovatTerritoriyu() {
         if (!razvedeno) {
             razvedeno = true;
-            System.out.println("Территория исследована: " + nazvanieRegiona);
         }
     }
     
@@ -45,7 +44,6 @@ class Geografiya implements AbstractGeografiya {
         }
     }
     
-    // Демонстрация protected метода
     protected void setRazvedeno(boolean razvedeno) {
         this.razvedeno = razvedeno;
     }

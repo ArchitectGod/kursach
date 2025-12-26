@@ -11,7 +11,7 @@ class MoveCounter extends Schitatel {
     private int bombHody;
     
     public MoveCounter() {
-        super("Счетчик ходов");
+        super("Счетчик ходов", 0); 
         this.vsegoHodov = 0;
         this.bezopasnyeHody = 0;
         this.flagHody = 0;

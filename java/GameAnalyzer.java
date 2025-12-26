@@ -8,7 +8,7 @@ class GameAnalyzer extends Schitatel {
     private int analyzedGames;
     
     public GameAnalyzer() {
-        super("Анализатор игр");
+        super("Анализатор игр", 0);
         this.analyzedGames = 0;
     }
     

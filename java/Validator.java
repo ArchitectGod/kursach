@@ -18,3 +18,4 @@ class Validator {
         return name != null && !name.isEmpty() && name.length() <= 49;
     }
 }
+
