@@ -2,41 +2,29 @@ import java.util.*;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.lang.reflect.*;
+import java.util.concurrent.TimeUnit;
 
-class Achievement extends Rekordsmen {
-    private boolean unlocked;
+class Achievement {
+    private String title;
     private String description;
-    
-    public Achievement(String category, String desc, int year) {
-        super(category, year, "Игрок");
-        this.unlocked = false;
+    private boolean unlocked;
+
+    public Achievement(String t, String desc) {
+        this.title = t;
         this.description = desc;
+        this.unlocked = false;
     }
-    
-    public Achievement(String category, String desc) {
-        this(category, desc, 2024);
-    }
-    
+
     public void print() {
-        System.out.printf("Достижение: %s - %s [%s]%n", 
-                         getKategoriyaSorevnovaniya(), 
-                         description, 
-                         unlocked ? "РАЗБЛОКИРОВАНО" : "заблокировано");
+        System.out.printf("Достижение: %s - %s [%s]%n", title, description,
+            unlocked ? "РАЗБЛОКИРОВАНО" : "заблокировано");
     }
-    
-    @Override
-    public void zaregistrirovatPobedu() {
-        unlocked = true;
-        System.out.println("Достижение разблокировано: " + getKategoriyaSorevnovaniya());
+
+    public void unlock() {
+        if (!unlocked) {
+            unlocked = true;
+        }
     }
-    
-    @Override
-    public void pokazatRezultat() {
-        System.out.printf("Рекорд в категории '%s': %s%n", 
-                         getKategoriyaSorevnovaniya(), description);
-    }
-    
+
     public boolean isUnlocked() { return unlocked; }
-    public String getDescription() { return description; }
 }
