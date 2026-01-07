@@ -470,6 +470,138 @@ public:
     }
 };
 
+class Game {
+private:
+    Board* board;
+    Player* player;
+    int state;
+    Timer timer;
+
+public:
+    Game(Board* b = nullptr, Player* p = nullptr) : board(b), player(p), state(0) {
+        timer.start();
+    }
+
+    void print() const {
+        printf("=== СОСТОЯНИЕ ИГРЫ ===\n");
+        printf("Статус: ");
+        switch (state) {
+        case 0: printf("В процессе\n"); break;
+        case 1: printf("ПОБЕДА!\n"); break;
+        case 2: printf("ПРОИГРЫШ\n"); break;
+        }
+        printf("Время игры: %d сек\n", getGameTime());
+        if (board) board->print();
+        if (player) player->print();
+    }
+
+    void winGame() {
+        state = 1;
+        if (player) {
+            player->updateBestTime();
+        }
+        printf("🎉 ПОБЕДА! 🎉\n");
+    }
+
+    void loseGame() {
+        state = 2;
+        if (player) {
+            player->addMistake();
+        }
+        printf("💥 ПРОИГРЫШ! 💥\n");
+    }
+
+    bool isGameRunning() const {
+        return state == 0;
+    }
+
+    int getGameTime() const {
+        return timer.getElapsedTime();
+    }
+
+    void pauseGame() {
+        timer.pause();
+        printf("Игра на паузе\n");
+    }
+
+    void resumeGame() {
+        timer.resume();
+        printf("Игра продолжается\n");
+    }
+
+    void makeMove(int x, int y, bool open = true) {
+        if (!isGameRunning()) return;
+
+        Cell* cell = board->getCell(x, y);
+        if (!cell || cell->getIsOpen()) return;
+
+        if (open) {
+            if (!board->areBombsPlaced()) {
+                board->placeBombs(x, y);
+            }
+
+            if (cell->getIsFlag()) {
+                printf("Клетка помечена флагом! Сначала уберите флаг.\n");
+                return;
+            }
+
+            cell->open();
+            board->decreaseSafeCells();
+            if (player) player->addOpenedCell();
+
+            if (cell->getIsBomb()) {
+                board->revealBombs();
+                loseGame();
+            }
+            else if (board->isGameWon()) {
+                winGame();
+            }
+        }
+        else {
+            cell->toggleFlag();
+        }
+    }
+
+    int getState() const { return state; }
+    Board* getBoard() const { return board; }
+    Player* getPlayer() const { return player; }
+    Timer& getTimer() { return timer; }
+
+    void setBoard(Board* b) { board = b; }
+    void setPlayer(Player* p) { player = p; }
+    void setState(int s) { state = s; }
+
+    void reset() {
+        state = 0;
+        timer.reset();
+        timer.start();
+        if (player) player->resetStats();
+        if (board) board->reset();
+    }
+
+    string serialize() {
+        string data;
+        if (timer.getIsRunning()) {
+            timer.pause();
+        }
+        data += timer.serialize();
+        if (player) {
+            data += player->serialize();
+        }
+        if (board) {
+            data += board->serialize();
+        }
+        return data;
+    }
+
+    void deserialize(const string& data) {
+        stringstream ss(data);
+        timer.deserialize(ss);
+        player->deserialize(ss);
+        board->deserialize(ss);
+    }
+};
+
 class Settings {
 private:
     int autoBombs;
@@ -770,6 +902,117 @@ public:
     }
 };
 
+class Validator {
+public:
+    bool isValidCoordinate(const Coordinate& coord, int maxX, int maxY) {
+        bool valid = coord.getX() >= 0 && coord.getX() < maxX &&
+            coord.getY() >= 0 && coord.getY() < maxY;
+        if (!valid) {
+            printf("Неверные координаты! Допустимый диапазон: X:0-%d, Y:0-%d\n", maxX - 1, maxY - 1);
+        }
+        return valid;
+    }
+
+    bool isValidName(const string& name) {
+        bool valid = !name.empty() && name.length() <= 49;
+        if (!valid) {
+            printf("Неверное имя! Длина должна быть 1-49 символов\n");
+        }
+        return valid;
+    }
+
+    bool isValidBombCount(int bombs, int width, int height) {
+        bool valid = bombs > 0 && bombs < width * height;
+        if (!valid) {
+            printf("Неверное количество бомб! Должно быть от 1 до %d\n", width * height - 1);
+        }
+        return valid;
+    }
+};
+
+class GameFactory {
+public:
+    void print() const {
+        printf("Фабрика игр: готова создавать игры\n");
+    }
+
+    Game* createEasyGame(const string& playerName) {
+        printf("Создаю лёгкую игру для %s\n", playerName.c_str());
+        Board* board = new Board(9, 9, 10);
+        Player* player = new Player(playerName);
+        return new Game(board, player);
+    }
+
+    Game* createMediumGame(const string& playerName) {
+        printf("Создаю среднюю игру для %s\n", playerName.c_str());
+        Board* board = new Board(16, 16, 40);
+        Player* player = new Player(playerName);
+        return new Game(board, player);
+    }
+
+    Game* createHardGame(const string& playerName) {
+        printf("Создаю сложную игру для %s\n", playerName.c_str());
+        Board* board = new Board(30, 16, 99);
+        Player* player = new Player(playerName);
+        return new Game(board, player);
+    }
+
+    Game* createCustomGame(const string& playerName, int width, int height, int bombs) {
+        printf("Создаю пользовательскую игру для %s\n", playerName.c_str());
+        Board* board = new Board(width, height, bombs);
+        Player* player = new Player(playerName);
+        return new Game(board, player);
+    }
+};
+
+class ScoringSystem {
+private:
+    int baseScore;
+    int timeBonus;
+    int mistakePenalty;
+
+public:
+    ScoringSystem() : baseScore(1000), timeBonus(50), mistakePenalty(100) {}
+
+    void print() const {
+        printf("Система подсчета очков\n");
+        printf("Базовые очки: %d, Бонус за время: %d, Штраф за ошибку: %d\n",
+            baseScore, timeBonus, mistakePenalty);
+    }
+
+    int calculateScore(const Player& player, int gameTime) {
+        int score = baseScore;
+        score += (3600 - gameTime) / 60 * timeBonus;
+        score -= player.getMistakes() * mistakePenalty;
+        return score > 0 ? score : 0;
+    }
+
+    int calculateWinScore(bool won, int time, int mistakes) {
+        if (!won) return 0;
+        int score = baseScore + (1800 - time) / 30 * timeBonus - mistakes * mistakePenalty;
+        return score > 0 ? score : 0;
+    }
+};
+
+class Notifier {
+public:
+    void showWinMessage() {
+        printf("\n*************** ПОЗДРАВЛЯЕМ! ВЫ ВЫИГРАЛИ! ***************\n");
+    }
+
+    void showLoseMessage() {
+        printf("\n* ВЫ ПРОИГРАЛИ! ПОПРОБУЙТЕ ЕЩЕ РАЗ! *\n");
+    }
+
+    void showErrorMessage(const string& message) {
+        printf("X ОШИБКА: %s\n", message.c_str());
+    }
+
+    void showInfoMessage(const string& message) {
+        printf("[i]  %s\n", message.c_str());
+    }
+};
+
 class Difficulty {
 private:
     string level;
@@ -878,6 +1121,33 @@ public:
             if (achievement.isUnlocked()) count++;
         }
         return count;
+    }
+};
+
+class PlayerSession {
+private:
+    Player* player;
+    time_t startTime;
+    int gamesPlayed;
+
+public:
+    PlayerSession(Player* p) : player(p), gamesPlayed(0) {
+        startTime = time(NULL);
+        printf("Сессия начата для игрока: %s\n", p->getName().c_str());
+    }
+
+    void print() const {
+        printf("=== СЕССИЯ ИГРОКА ===\n");
+        printf("Игрок: %s\n", player ? player->getName().c_str() : "нет игрока");
+        printf("Начата: %s", ctime(&startTime));
+        printf("Продолжительность: %d минут\n", (int)(time(NULL) - startTime) / 60);
+        printf("Игр сыграно в сессии: %d\n", gamesPlayed);
+    }
+
+    void addGamePlayed() {
+        gamesPlayed++;
+        printf("Игрок %s сыграл %d игр в этой сессии\n",
+            player->getName().c_str(), gamesPlayed);
     }
 };
 
@@ -1093,6 +1363,49 @@ private:
     }
 };
 
+class GameController {
+private:
+    Game* currentGame;
+    int movesCount;
+
+public:
+    GameController() : currentGame(nullptr), movesCount(0) {
+        printf("Контроллер игры создан\n");
+    }
+
+    void print() const {
+        printf("Контроллер игры, ходов сделано: %d\n", movesCount);
+    }
+
+    void setGame(Game* game) {
+        currentGame = game;
+        movesCount = 0;
+        printf("Игра установлена в контроллере\n");
+    }
+
+    void processMove(const Coordinate& coord) {
+        if (!currentGame) {
+            printf("Нет активной игры!\n");
+            return;
+        }
+
+        movesCount++;
+        printf("Обработка хода #%d на (%d,%d)\n", movesCount, coord.getX(), coord.getY());
+    }
+
+    void pauseCurrentGame() {
+        if (currentGame) {
+            currentGame->pauseGame();
+        }
+    }
+
+    void resumeCurrentGame() {
+        if (currentGame) {
+            currentGame->resumeGame();
+            printf("Игра возобновлена\n");
+        }
+    }
+};
 
 class GameHistory {
 private:
