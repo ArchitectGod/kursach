@@ -149,6 +149,271 @@ public:
     void setIsBomb(bool bomb) { isBomb = bomb; }
 };
 
+class Board {
+private:
+    int width;
+    int height;
+    int totalBombs;
+    int safeCellsLeft;
+    vector<Cell> cells;
+    bool bombsPlaced;
+
+public:
+    Board(int w = 9, int h = 9, int bombs = 10) : width(w), height(h), totalBombs(bombs),
+        safeCellsLeft(w* h - bombs), bombsPlaced(false) {
+        initializeCells();
+    }
+    void printdata() {
+        printf("Информация о доске\n");
+        printf("width - %d\nheight - %d\ntotalBombs - %d\nsafeCellsleft - %d\nbombsplaced - %d\n,sizecells - %d", width, height, totalBombs, safeCellsLeft, bombsPlaced, cells.size());
+    }
+    void initializeCells() {
+        cells.clear();
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                cells.emplace_back(x, y);
+            }
+        }
+    }
+
+    void print(char cellClosed = '#', char bomb = '*') {
+        printf("   ");
+        for (int x = 0; x < width; x++) {
+            printf("%2d ", x);
+        }
+        printf("\n");
+
+        for (int y = 0; y < height; y++) {
+            printf("%2d ", y);
+            for (int x = 0; x < width; x++) {
+                const Cell& cell = cells[y * width + x];
+                if (cell.getIsOpen()) {
+                    if (cell.getIsBomb()) {
+                        printf(" %c ", bomb);
+                    }
+                    else {
+                        int count = cell.getCountBomb();
+                        if (count == 0) {
+                            printf(" . ");
+                        }
+                        else {
+                            printf(" %d ", count);
+                        }
+                    }
+                }
+                else if (cell.getIsFlag()) {
+                    printf(" F ");
+                }
+                else {
+                    printf(" %c ", cellClosed);
+                }
+            }
+            printf("\n");
+        }
+        int flags = countFlags();
+        printf("Бомб: %d, Флагов: %d\n", totalBombs, flags);
+        printf("Безопасных клеток осталось: %d\n", safeCellsLeft);
+    }
+
+    int countFlags() const {
+        int count = 0;
+        for (const auto& cell : cells) {
+            if (cell.getIsFlag()) count++;
+        }
+        return count;
+    }
+
+    Cell* getCell(int x, int y) {
+        if (x >= 0 && x < width && y >= 0 && y < height) {
+            return &cells[y * width + x];
+        }
+        return nullptr;
+    }
+
+    void decreaseSafeCells() {
+        if (safeCellsLeft > 0) {
+            safeCellsLeft--;
+        }
+    }
+
+    bool isGameWon() const {
+        return safeCellsLeft == 0;
+    }
+
+    void placeBombs(int firstX, int firstY) {
+        if (bombsPlaced) return;
+
+        int bombsPlacedCount = 0;
+        while (bombsPlacedCount < totalBombs) {
+            int x = rand() % width;
+            int y = rand() % height;
+
+            if ((abs(x - firstX) <= 1 && abs(y - firstY) <= 1) ||
+                getCell(x, y)->getIsBomb()) {
+                continue;
+            }
+
+            getCell(x, y)->setBomb();
+            bombsPlacedCount++;
+        }
+        bombsPlaced = true;
+        calculateBombCounts();
+    }
+
+    void calculateBombCounts() {
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                Cell* cell = getCell(x, y);
+                if (!cell->getIsBomb()) {
+                    int count = 0;
+                    for (int dy = -1; dy <= 1; dy++) {
+                        for (int dx = -1; dx <= 1; dx++) {
+                            if (dx == 0 && dy == 0) continue;
+                            Cell* neighbor = getCell(x + dx, y + dy);
+                            if (neighbor && neighbor->getIsBomb()) {
+                                count++;
+                            }
+                        }
+                    }
+                    cell->setCountBomb(count);
+                }
+            }
+        }
+    }
+
+    int getWidth() const { return width; }
+    int getHeight() const { return height; }
+    int getTotalBombs() const { return totalBombs; }
+    int getSafeCellsLeft() const { return safeCellsLeft; }
+    bool areBombsPlaced() const { return bombsPlaced; }
+
+    void openAllCells() {
+        for (auto& cell : cells) {
+            cell.open();
+        }
+    }
+
+    void revealBombs() {
+        for (auto& cell : cells) {
+            if (cell.getIsBomb()) {
+                cell.open();
+            }
+        }
+    }
+    void reset() {
+        bombsPlaced = false;
+        safeCellsLeft = width * height - totalBombs;
+        initializeCells();
+    }
+
+    string serialize() const {
+        string data;
+        data += to_string(width) + " " + to_string(height) + " " +
+            to_string(totalBombs) + " " + to_string(safeCellsLeft) + " " +
+            to_string(bombsPlaced) + "\n";
+
+        for (const auto& cell : cells) {
+            data += to_string(cell.getX()) + " " + to_string(cell.getY()) + " " +
+                to_string(cell.getIsBomb()) + " " + to_string(cell.getIsOpen()) + " " +
+                to_string(cell.getIsFlag()) + " " + to_string(cell.getCountBomb()) + "\n";
+        }
+        return data;
+    }
+
+    bool deserialize(istream& ss) {
+        ss >> width >> height >> totalBombs >> safeCellsLeft >> bombsPlaced;
+
+        cells.clear();
+        for (int i = 0; i < width * height; i++) {
+            int x, y, bomb, open, flag, count;
+            if (!(ss >> x >> y >> bomb >> open >> flag >> count)) {
+                return false;
+            }
+            Cell cell(x, y, bomb, open, flag, count);
+            cells.push_back(cell);
+        }
+        return true;
+    }
+};
+
+class Player {
+private:
+    string name;
+    int timeSpent;
+    int openedCells;
+    int mistakes;
+    int bestTime;
+
+public:
+    Player(const string& playerName = "") : name(playerName), timeSpent(0), openedCells(0), mistakes(0), bestTime(0) {}
+    void print() const {
+        printf("Игрок: %s\n", name.c_str());
+        printf("Время: %d сек, Открыто: %d, Ошибок: %d, Лучшее время: %d сек\n",
+            timeSpent, openedCells, mistakes, bestTime);
+    }
+
+    void inputPlayerInfo() {
+        printf("Введите имя игрока: ");
+        char buffer[50];
+        scanf("%49s", buffer);
+        name = buffer;
+        clearInputBuffer();
+
+        printf("Введите текущее время игры (сек): ");
+        scanf("%d", &timeSpent);
+        clearInputBuffer();
+    }
+
+    void addMistake() {
+        mistakes++;
+        printf("Ошибка! Всего ошибок: %d\n", mistakes);
+    }
+
+    void addOpenedCell() {
+        openedCells++;
+    }
+
+    void updateBestTime() {
+        if (bestTime == 0 || timeSpent < bestTime) {
+            bestTime = timeSpent;
+            printf("Новый рекорд: %d сек!\n", bestTime);
+        }
+    }
+
+    void addTime(int seconds) {
+        timeSpent += seconds;
+    }
+    void print() {
+        printf("Информация об игроке\n");
+        printf("name - %s\ntimeSpent - %d\nopenedCells - %d\nmistakes - %d\nbesttime - %d\n", name.c_str(), timeSpent, openedCells, mistakes, bestTime);
+    }
+
+    string getName() const { return name; }
+    int getTimeSpent() const { return timeSpent; }
+    int getOpenedCells() const { return openedCells; }
+    int getMistakes() const { return mistakes; }
+    int getBestTime() const { return bestTime; }
+
+    void setTimeSpent(int time) { timeSpent = time; }
+    void setName(const string& newName) { name = newName; }
+    void resetStats() {
+        openedCells = 0;
+        mistakes = 0;
+        timeSpent = 0;
+    }
+
+    string serialize() const {
+        return name + " " + to_string(timeSpent) + " " +
+            to_string(openedCells) + " " + to_string(mistakes) + " " +
+            to_string(bestTime) + "\n";
+    }
+
+    bool deserialize(istream& ss) {
+        ss >> name >> timeSpent >> openedCells >> mistakes >> bestTime;
+        return true;
+    }
+};
+
 class Timer {
 private:
     time_t startTime;
@@ -354,6 +619,57 @@ public:
     }
 };
 
+class GameStats {
+private:
+    int gamesPlayed;
+    int gamesWon;
+    int totalTime;
+    int bestTime;
+
+public:
+    GameStats() : gamesPlayed(0), gamesWon(0), totalTime(0), bestTime(0) {}
+
+    void print() const {
+        printf("=== СТАТИСТИКА ===\n");
+        printf("Игр сыграно: %d\n", gamesPlayed);
+        printf("Побед: %d\n", gamesWon);
+        printf("Процент побед: %.1f%%\n", gamesPlayed > 0 ? (float)gamesWon / gamesPlayed * 100 : 0);
+        printf("Лучшее время: %d сек\n", bestTime);
+        printf("Среднее время: %.1f сек\n", gamesPlayed > 0 ? (float)totalTime / gamesPlayed : 0);
+    }
+
+    void addGame(bool won, int time) {
+        gamesPlayed++;
+        if (won) {
+            gamesWon++;
+            totalTime += time;
+            if (time < bestTime || bestTime == 0) {
+                bestTime = time;
+            }
+        }
+    }
+
+    void reset() {
+        gamesPlayed = 0;
+        gamesWon = 0;
+        totalTime = 0;
+        bestTime = 0;
+    }
+
+    void saveToFile(const string& filename) {
+        FILE* file = fopen(filename.c_str(), "a");
+        if (file) {
+            time_t now = time(NULL);
+            fprintf(file, "Статистика от %s", ctime(&now));
+            fprintf(file, "Игр сыграно: %d\n", gamesPlayed);
+            fprintf(file, "Побед: %d\n", gamesWon);
+            fprintf(file, "Лучшее время: %d сек\n", bestTime);
+            fprintf(file, "-----------------\n");
+            fclose(file);
+        }
+    }
+};
+
 class RandomGenerator {
 private:
     int seed;
@@ -378,6 +694,79 @@ public:
 
     Coordinate getRandomCoordinate(int maxX, int maxY) {
         return Coordinate(getRandom(0, maxX - 1), getRandom(0, maxY - 1));
+    }
+};
+
+class Renderer {
+private:
+    char cellClosed;
+    char bombChar;
+
+public:
+    Renderer(char closed = '#', char bomb = '*') : cellClosed(closed), bombChar(bomb) {}
+
+    void setTheme(char closed, char bomb) {
+        cellClosed = closed;
+        bombChar = bomb;
+    }
+
+    void renderBoard(Board& board) {
+        board.print(cellClosed, bombChar);
+    }
+
+    void renderPlayer(const Player& player) {
+        player.print();
+    }
+
+    void renderGame(const Game& game) {
+        game.print();
+    }
+
+    void renderGameState(const Game& game, const string& playerName) {
+        printf("=== САПЕР ===\n");
+        printf("Время: %d сек\n", game.getGameTime());
+        printf("Игрок: %s\n", playerName.c_str());
+        printf("\n");
+        if (game.getBoard()) {
+            renderBoard(*game.getBoard());
+        }
+        printf("\n");
+    }
+};
+
+class InputHandler {
+public:
+    Coordinate getCellCoordinates() {
+        int x, y;
+        safeInputTwoInts(&x, &y, "Введите координаты X Y: ");
+        return Coordinate(x, y);
+    }
+
+    string getPlayerName() {
+        string name;
+        printf("Введите имя игрока: ");
+        char buffer[50];
+        scanf("%49s", buffer);
+        clearInputBuffer();
+        name = buffer;
+        return name;
+    }
+    int getMenuChoice(int min, int max) {
+        while (true) {
+            int choice = safeInputInt("Выберите действие: ");
+            if (choice >= min && choice <= max) {
+                return choice;
+            }
+            printf("Неверный выбор! Введите число от %d до %d.\n", min, max);
+        }
+    }
+
+    char getAction() {
+        char action;
+        printf("Выберите действие (o-открыть, f-флаг, h-помощь, m-меню, q-выход): ");
+        scanf(" %c", &action);
+        clearInputBuffer();
+        return action;
     }
 };
 
@@ -704,6 +1093,91 @@ private:
     }
 };
 
+
+class GameHistory {
+private:
+    vector<pair<string, Coordinate>> moves;
+
+public:
+    void print() const {
+        printf("=== ИСТОРИЯ ХОДОВ ===\n");
+        if (moves.empty()) {
+            printf("История пуста.\n");
+            return;
+        }
+
+        int start = max(0, (int)moves.size() - 10);
+        for (size_t i = start; i < moves.size(); i++) {
+            printf("Ход %zu: %s в (%d,%d)\n",
+                i + 1, moves[i].first.c_str(),
+                moves[i].second.getX(), moves[i].second.getY());
+        }
+    }
+
+    void addMove(const string& move, const Coordinate& coord) {
+        moves.emplace_back(move, coord);
+    }
+
+    void clear() {
+        moves.clear();
+    }
+
+    int getMoveCount() const {
+        return moves.size();
+    }
+};
+
+
+class MoveCounter {
+private:
+    int totalMoves;
+    int safeMoves;
+    int flagMoves;
+    int bombMoves;
+
+public:
+    MoveCounter() : totalMoves(0), safeMoves(0), flagMoves(0), bombMoves(0) {}
+
+    void print() const {
+        printf("=== СТАТИСТИКА ХОДОВ ===\n");
+        printf("Всего ходов: %d\n", totalMoves);
+        printf("Открытий клеток: %d\n", safeMoves);
+        printf("Установок флагов: %d\n", flagMoves);
+        printf("Ошибочных ходов: %d\n", bombMoves);
+        if (totalMoves > 0) {
+            printf("Процент безопасных: %.1f%%\n", (float)safeMoves / totalMoves * 100);
+            printf("Процент ошибок: %.1f%%\n", (float)bombMoves / totalMoves * 100);
+        }
+    }
+
+    void addSafeMove() {
+        totalMoves++;
+        safeMoves++;
+    }
+
+    void addFlagMove() {
+        totalMoves++;
+        flagMoves++;
+    }
+
+    void addBombMove() {
+        totalMoves++;
+        bombMoves++;
+    }
+
+    void reset() {
+        totalMoves = 0;
+        safeMoves = 0;
+        flagMoves = 0;
+        bombMoves = 0;
+    }
+
+    int getTotalMoves() const { return totalMoves; }
+    float getSuccessRate() const {
+        if (totalMoves == 0) return 0.0f;
+        return (float)safeMoves / totalMoves * 100;
+    }
+};
 
 int main() {
     setlocale(LC_ALL, "Russian");
