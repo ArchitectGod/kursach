@@ -41,6 +41,22 @@ int safeInputInt(const char* prompt = "") {
     }
 }
 
+void safeInputTwoInts(int* x, int* y, const char* prompt = "") {
+    while (true) {
+        if (prompt[0] != '\0') {
+            printf("%s", prompt);
+        }
+
+        char buffer[100];
+        if (fgets(buffer, sizeof(buffer), stdin)) {
+            if (sscanf(buffer, "%d %d", x, y) == 2) {
+                return;
+            }
+        }
+        printf("Неверный ввод! Введите два числа через пробел.\n");
+    }
+}
+
 class Coordinate {
 private:
     int x;
@@ -1124,6 +1140,146 @@ public:
     }
 };
 
+class HighScore {
+private:
+    string playerName;
+    int score;
+    int time;
+    string difficulty;
+
+public:
+    HighScore(const string& name = "", int s = 0, int t = 0, const string& diff = "Легко")
+        : playerName(name), score(s), time(t), difficulty(diff) {}
+
+    void print() const {
+        printf("%s - %d очков, время: %d сек, сложность: %s\n",
+            playerName.c_str(), score, time, difficulty.c_str());
+    }
+
+    int getScore() const { return score; }
+    string getName() const { return playerName; }
+    int getTime() const { return time; }
+    string getDifficulty() const { return difficulty; }
+};
+
+class HighScoreManager {
+private:
+    vector<HighScore> highScores;
+    const string filename = "highscores.txt";
+
+public:
+    HighScoreManager() {
+        loadScores();
+    }
+    void print() const {
+        printf("=== ТАБЛИЦА РЕКОРДОВ ===\n");
+        if (highScores.empty()) {
+            printf("Рекордов пока нет.\n");
+            return;
+        }
+
+        for (size_t i = 0; i < highScores.size() && i < 10; i++) {
+            printf("%zu. ", i + 1);
+            highScores[i].print();
+        }
+    }
+
+    void addScore(const HighScore& score) {
+        highScores.push_back(score);
+        sort(highScores.begin(), highScores.end(),
+            [](const HighScore& a, const HighScore& b) {
+                return a.getScore() > b.getScore();
+            });
+
+        if (highScores.size() > 10) {
+            highScores.resize(10);
+        }
+
+        saveScores();
+    }
+
+    void addScore(const string& playerName, int score, int time, const string& difficulty) {
+        addScore(HighScore(playerName, score, time, difficulty));
+    }
+
+    void clearScores() {
+        highScores.clear();
+        saveScores();
+    }
+
+private:
+    void loadScores() {
+        FILE* file = fopen(filename.c_str(), "r");
+        if (!file) return;
+
+        highScores.clear();
+        char name[100], difficulty[100];
+        int score, time;
+
+        while (fscanf(file, "%s %d %d %s", name, &score, &time, difficulty) == 4) {
+            highScores.emplace_back(name, score, time, difficulty);
+        }
+        fclose(file);
+    }
+
+    void saveScores() {
+        FILE* file = fopen(filename.c_str(), "w");
+        if (!file) return;
+
+        for (const auto& score : highScores) {
+            fprintf(file, "%s %d %d %s\n",
+                score.getName().c_str(), score.getScore(),
+                score.getTime(), score.getDifficulty().c_str());
+        }
+        fclose(file);
+    }
+};
+
+class gamesboard {
+private:
+    vector<pair<string, pair<int, bool>>> games; 
+
+public:
+    void addGame(const string& playerName, int time, bool won) {
+        games.emplace_back(playerName, make_pair(time, won));
+        printf("Игра добавлена в историю: %s, %d сек, %s\n",
+            playerName.c_str(), time, won ? "ПОБЕДА" : "ПОРАЖЕНИЕ");
+    }
+
+    void print() const {
+        printf("=== ИСТОРИЯ ИГР ===\n");
+        if (games.empty()) {
+            printf("История игр пуста.\n");
+            return;
+        }
+
+        int start = max(0, (int)games.size() - 10);
+        for (size_t i = start; i < games.size(); i++) {
+            printf("%zu. %s: %d сек, %s\n",
+                i + 1,
+                games[i].first.c_str(),
+                games[i].second.first,
+                games[i].second.second ? "ПОБЕДА" : "ПОРАЖЕНИЕ");
+        }
+    }
+
+    void saveToFile() {
+        FILE* file = fopen("game_history.txt", "a");
+        if (!file) return;
+
+        time_t now = time(NULL);
+        fprintf(file, "История игр от %s", ctime(&now));
+        for (const auto& game : games) {
+            fprintf(file, "%s: %d сек, %s\n",
+                game.first.c_str(),
+                game.second.first,
+                game.second.second ? "ПОБЕДА" : "ПОРАЖЕНИЕ");
+        }
+        fprintf(file, "-----------------\n");
+        fclose(file);
+    }
+};
+
 class PlayerSession {
 private:
     Player* player;
@@ -1363,6 +1519,135 @@ private:
     }
 };
 
+class Theme {
+private:
+    string name;
+    char cellClosed;
+    char bombChar;
+
+public:
+    Theme() : cellClosed('#'), bombChar('*') {}
+
+    void select() {
+        printf("Выберите тему:\n");
+        printf("1. Classic (#, *)\n");
+        printf("2. Simple (., X)\n");
+        int choice = safeInputInt("Выбор: ");
+        if (choice == 2) {
+            cellClosed = '.';
+            bombChar = 'X';
+            printf("Тема: Simple\n");
+            name = "Simple";
+        }
+        else {
+            cellClosed = '#';
+            bombChar = '*';
+            printf("Тема: Classic\n");
+            name = "Classic";
+        }
+    }
+    string getName() const { return name; }
+    char getCellClosed() const { return cellClosed; }
+    char getBomb() const { return bombChar; }
+};
+
+class HintSystem {
+private:
+    int hintsAvailable;
+    bool hintUsed;
+
+public:
+    HintSystem() : hintsAvailable(3), hintUsed(false) {}
+
+    void print() const {
+        printf("Доступно подсказок: %d\n", hintsAvailable);
+    }
+
+    Coordinate getHint(Board& board) {
+        if (hintUsed) {
+            printf("Подсказка уже использована в этом ходе.\n");
+            return Coordinate(-1, -1);
+        }
+
+        if (hintsAvailable <= 0) {
+            printf("Подсказки закончились!\n");
+            return Coordinate(-1, -1);
+        }
+
+        for (int y = 0; y < board.getHeight(); y++) {
+            for (int x = 0; x < board.getWidth(); x++) {
+                Cell* cell = board.getCell(x, y);
+                if (cell && !cell->getIsOpen() && !cell->getIsFlag() && !cell->getIsBomb()) {
+                    hintsAvailable--;
+                    hintUsed = true;
+                    return Coordinate(x, y);
+                }
+            }
+        }
+
+        printf("Не найдено безопасных клеток для подсказки.\n");
+        return Coordinate(-1, -1);
+    }
+
+    void addHints(int count) {
+        hintsAvailable += count;
+    }
+
+    int getHintsAvailable() const { return hintsAvailable; }
+
+    void resetHintUsed() {
+        hintUsed = false;
+    }
+};
+class HelpSystem {
+public:
+    void print() const {
+        printf("=== СИСТЕМА ПОМОЩИ ===\n");
+        printf("Цель игры: открыть все клетки без бомб\n");
+        printf("Правила:\n");
+        printf("1. Цифры показывают количество бомб вокруг клетки\n");
+        printf("2. Если цифра 0, все соседние клетки безопасны\n");
+        printf("3. Используйте флаги для отметки предполагаемых бомб\n");
+        printf("\nУправление в игре:\n");
+        printf("o - открыть клетку\n");
+        printf("f - поставить/убрать флаг\n");
+        printf("h - получить подсказку\n");
+        printf("m - открыть игровое меню\n");
+        printf("q - выйти в меню\n");
+        printf("\nИгровое меню:\n");
+        printf("1. Продолжить игру\n");
+        printf("2. Сохранить игру\n");
+        printf("3. Вернуться в главное меню\n");
+    }
+};
+
+class GameAnalyzer {
+public:
+    void print() const {
+        printf("Анализатор игрового процесса готов к работе\n");
+    }
+
+    void analyzeBoard(const Board& board) {
+        int flaggedBombs = 0;
+        int totalBombs = board.getTotalBombs();
+
+        printf("Анализ поля: бомб %d, безопасных клеток осталось: %d\n",
+            totalBombs, board.getSafeCellsLeft());
+        printf("Рекомендация: сосредоточьтесь на областях с цифрами\n");
+    }
+
+    void analyzePlayer(const Player& player) {
+        printf("Анализ игрока: %s\n", player.getName().c_str());
+        printf("Эффективность: %.1f%%\n",
+            player.getOpenedCells() > 0 ?
+            (float)(player.getOpenedCells() - player.getMistakes()) / player.getOpenedCells() * 100 : 0);
+
+        if (player.getMistakes() > 0) {
+            printf("Совет: будьте внимательнее при установке флагов\n");
+        }
+    }
+};
+
 class GameController {
 private:
     Game* currentGame;
@@ -1489,6 +1774,575 @@ public:
     float getSuccessRate() const {
         if (totalMoves == 0) return 0.0f;
         return (float)safeMoves / totalMoves * 100;
+    }
+};
+
+class GameManager {
+private:
+    unique_ptr<Game> currentGame;
+    unique_ptr<Settings> settings;
+    unique_ptr<Logger> logger;
+    unique_ptr<HighScoreManager> scoreManager;
+    unique_ptr<AchievementSystem> achievementSystem;
+    unique_ptr<SoundSystem> soundSystem;
+    unique_ptr<HintSystem> hintSystem;
+    unique_ptr<GameHistory> gameHistory;
+    unique_ptr<MoveCounter> moveCounter;
+    unique_ptr<GameStats> gameStats;
+    unique_ptr<Renderer> renderer;
+    unique_ptr<InputHandler> inputHandler;
+    unique_ptr<Validator> validator;
+    unique_ptr<Notifier> notifier;
+    unique_ptr<HelpSystem> helpSystem;
+    unique_ptr<Menu> menu;
+
+    unique_ptr<GameFactory> gameFactory;
+    unique_ptr<GameController> gameController;
+    unique_ptr<PlayerSession> playerSession;
+    unique_ptr<PlayerProfile> playerProfile;
+    unique_ptr<gamesboard> gamesBoard;
+    unique_ptr<SaveManager> saveManager;
+    unique_ptr<Theme> theme;
+    unique_ptr<GameAnalyzer> gameAnalyzer;
+    unique_ptr<RandomGenerator> randomGenerator;
+
+    bool gameRunning;
+    int currentDifficulty;
+    string currentPlayerName;
+    bool hasSavedGame;
+
+public:
+    GameManager() : gameRunning(false), currentDifficulty(0), hasSavedGame(false) {
+        initializeSystems();
+    }
+
+    void run() {
+        srand(time(NULL));
+        showMainMenu();
+    }
+
+private:
+    void initializeSystems() {
+        settings = make_unique<Settings>();
+        logger = make_unique<Logger>();
+        scoreManager = make_unique<HighScoreManager>();
+        achievementSystem = make_unique<AchievementSystem>();
+        soundSystem = make_unique<SoundSystem>();
+        hintSystem = make_unique<HintSystem>();
+        gameHistory = make_unique<GameHistory>();
+        moveCounter = make_unique<MoveCounter>();
+        gameStats = make_unique<GameStats>();
+        renderer = make_unique<Renderer>();
+        inputHandler = make_unique<InputHandler>();
+        validator = make_unique<Validator>();
+        notifier = make_unique<Notifier>();
+        helpSystem = make_unique<HelpSystem>();
+        menu = make_unique<Menu>();
+
+        gameFactory = make_unique<GameFactory>();
+        gameController = make_unique<GameController>();
+        gamesBoard = make_unique<gamesboard>();
+        saveManager = make_unique<SaveManager>();
+        theme = make_unique<Theme>();
+        gameAnalyzer = make_unique<GameAnalyzer>();
+        randomGenerator = make_unique<RandomGenerator>();
+
+        printf("Все 35 систем инициализированы!\n");
+    }
+
+    void showMainMenu() {
+        while (true) {
+            system("cls");
+            int choice = menu->showMainMenu();
+            switch (choice) {
+            case 1: startNewGame(); break;
+            case 2: continueGame(); break;
+            case 3: loadGame(); break;
+            case 4: showSettings(); break;
+            case 5: showHighScores(); break;
+            case 6: showAchievements(); break;
+            case 7: showStatistics(); break;
+            case 8: showPlayerProfile(); break;
+            case 9: showGamesHistory(); break;
+            case 10: showHelp(); break;
+            case 11: exitGame(); return;
+            }
+        }
+    }
+
+    void showPlayerProfile() {
+        system("cls");
+        if (playerProfile) {
+            playerProfile->print();
+        }
+        else {
+            printf("Профиль игрока не создан. Начните новую игру.\n");
+        }
+        system("pause");
+    }
+
+    void showGamesHistory() {
+        system("cls");
+        gamesBoard->print();
+        system("pause");
+    }
+
+    void startNewGame() {
+        system("cls");
+        printf("=== НОВАЯ ИГРА ===\n");
+
+        Difficulty difficulty;
+        difficulty.inputDifficulty();
+        currentDifficulty = getDifficultyLevel(difficulty.getLevel());
+
+        string playerName;
+        do {
+            playerName = inputHandler->getPlayerName();
+        } while (!validator->isValidName(playerName));
+
+        currentPlayerName = playerName;
+
+        theme->select();
+        renderer->setTheme(theme->getCellClosed(), theme->getBomb());
+
+        Player* player = new Player(playerName);
+
+        playerSession = make_unique<PlayerSession>(player);
+        playerProfile = make_unique<PlayerProfile>(player);
+
+        playerSession->addGamePlayed();
+
+        Game* newGame = nullptr;
+        if (difficulty.getLevel() == "Пользовательская") {
+            newGame = gameFactory->createCustomGame(playerName,
+                difficulty.getWidth(), difficulty.getHeight(), difficulty.getBombs());
+        }
+        else {
+            switch (currentDifficulty) {
+            case 0: newGame = gameFactory->createEasyGame(playerName); break;
+            case 1: newGame = gameFactory->createMediumGame(playerName); break;
+            case 2: newGame = gameFactory->createHardGame(playerName); break;
+            }
+        }
+
+        currentGame.reset(newGame);
+        gameController->setGame(currentGame.get());
+
+        logger->logGameStart(playerName);
+        gameRunning = true;
+        hasSavedGame = false;
+        gameHistory->clear();
+        moveCounter->reset();
+        hintSystem = make_unique<HintSystem>();
+
+        playGame();
+    }
+
+    void continueGame() {
+        if (!currentGame || !gameRunning) {
+            printf("Нет активной игры для продолжения.\n");
+            system("pause");
+            return;
+        }
+        if (!currentGame->getTimer().getIsRunning()) {
+            currentGame->getTimer().resume();
+        }
+        playGame();
+    }
+
+    bool loadGame() {
+        system("cls");
+        printf("=== ЗАГРУЗКА ===\n");
+
+        vector<string> saves = saveManager->getSaveList();
+        if (saves.empty()) {
+            printf("Сохранений нет\n");
+            system("pause");
+            return false;
+        }
+
+        for (int i = 0; i < saves.size(); i++) {
+            printf("%d. %s\n", i + 1, saves[i].c_str());
+        }
+        printf("0. Отмена\n");
+
+        int choice = safeInputInt("Выберите сохранение: ");
+        if (choice == 0) return false;
+
+        if (choice < 1 || choice > saves.size()) {
+            printf("Неверный выбор\n");
+            system("pause");
+            return false;
+        }
+
+        string saveName = saves[choice - 1];
+        string data = saveManager->loadGame(saveName);
+
+        if (data.empty()) {
+            printf("Ошибка загрузки\n");
+            system("pause");
+            return false;
+        }
+        currentGame = make_unique<Game>(new Board, new Player);
+        currentGame->deserialize(data);
+        printf("Игра '%s' загружена\n", saves[choice - 1].c_str());
+        Player *pl = currentGame->getPlayer();
+        currentPlayerName = pl->getName();
+        gameRunning = true;
+        system("pause");
+        return true;
+    }
+
+    void saveCurrentGame() {
+        if (!currentGame) {
+            printf("Нет активной игры для сохранения.\n");
+            return;
+        }
+
+        system("cls");
+        printf("=== СОХРАНЕНИЕ ИГРЫ ===\n");
+        printf("Введите имя сохранения: ");
+        char saveName[100];
+        scanf("%99s", saveName);
+        clearInputBuffer();
+
+        string gameData = currentGame->serialize();
+        if (saveManager->saveGame(saveName, gameData)) {
+            hasSavedGame = true;
+            printf("Игра сохранена как: %s\n", saveName);
+            system("pause");
+        }
+    }
+
+    void playGame() {
+        while (gameRunning && currentGame->isGameRunning()) {
+            system("cls");
+            renderer->renderGameState(*currentGame, currentPlayerName);
+            printf("Тема: %s\n", theme->getName().c_str());
+            printf("Подсказок: %d\n", hintSystem->getHintsAvailable());
+            printf("\nКоманды: (o)открыть, (f)флаг, (h)подсказка, (m)меню, (p)пауза , (q)выход\n");
+            printf("Выберите действие: ");
+
+            char action;
+            scanf(" %c", &action);
+            clearInputBuffer();
+
+            processAction(action);
+        }
+
+        if (currentGame && !currentGame->isGameRunning()) {
+            showGameResult();
+        }
+    }
+
+    void showGameMenu() {
+        while (true) {
+            system("cls");
+
+            int choice = menu->showGameMenu();
+
+            switch (choice) {
+            case 1: return;
+            case 2: saveCurrentGame(); break;
+            case 3:
+                gameRunning = false;
+                printf("Возврат в главное меню...\n");
+                system("pause");
+                return;
+            }
+        }
+    }
+
+    void processAction(char action) {
+        hintSystem->resetHintUsed();
+
+        switch (tolower(action)) {
+        case 'o': {
+            int x, y;
+            safeInputTwoInts(&x, &y, "Введите координаты для открытия (X Y): ");
+            handleOpenCell(x, y);
+            break;
+        }
+        case 'f': {
+            int x, y;
+            safeInputTwoInts(&x, &y, "Введите координаты для флага (X Y): ");
+            handleFlagCell(x, y);
+            break;
+        }
+        case 'h': {
+            handleHint();
+            break;
+        }
+        case 'm': {
+            showGameMenu();
+            break;
+        }
+        case 'p': {
+            handlePause();
+            break;
+        }
+        case 'q': {
+            if (hasSavedGame) {
+                printf("Игра сохранена. Выход в меню...\n");
+            }
+            else {
+                printf("Игра не сохранена. Сохранить перед выходом? (y/n): ");
+                char saveChoice;
+                scanf(" %c", &saveChoice);
+                clearInputBuffer();
+                if (tolower(saveChoice) == 'y') {
+                    saveCurrentGame();
+                }
+            }
+            gameRunning = false;
+            system("pause");
+            break;
+        }
+        default:
+            printf("Неверная команда!\n");
+            system("pause");
+        }
+    }
+    void handlePause() {
+        gameController->pauseCurrentGame();
+        printf("\nИгра на паузе. Нажмите любую клавишу для продолжения...\n");
+        _getch();
+        gameController->resumeCurrentGame();
+    }
+
+    void handleOpenCell(int x, int y) {
+        if (!validator->isValidCoordinate(Coordinate(x, y),
+            currentGame->getBoard()->getWidth(),
+            currentGame->getBoard()->getHeight())) {
+            system("pause");
+            return;
+        }
+
+        Cell* cell = currentGame->getBoard()->getCell(x, y);
+        if (!cell) return;
+
+        if (cell->getIsOpen()) {
+            notifier->showInfoMessage("Клетка уже открыта!");
+            system("pause");
+            return;
+        }
+        if (cell->getIsFlag()) {
+            notifier->showInfoMessage("Сначала уберите флаг!");
+            system("pause");
+            return;
+        }
+
+        soundSystem->playClickSound();
+        currentGame->makeMove(x, y);
+        gameHistory->addMove("Открытие", Coordinate(x, y));
+        logger->logMove(currentGame->getPlayer()->getName(), x, y, "Открытие");
+
+        if (cell->getIsBomb()) {
+            moveCounter->addBombMove();
+            soundSystem->playExplosionSound();
+        }
+        else {
+            moveCounter->addSafeMove();
+            if (cell->getCountBomb() == 0) {
+                openAdjacentCells(x, y);
+            }
+        }
+
+        checkGameEnd();
+    }
+
+    void handleFlagCell(int x, int y) {
+        if (!validator->isValidCoordinate(Coordinate(x, y),
+            currentGame->getBoard()->getWidth(),
+            currentGame->getBoard()->getHeight())) {
+            system("pause");
+            return;
+        }
+
+        Cell* cell = currentGame->getBoard()->getCell(x, y);
+        if (!cell || cell->getIsOpen()) return;
+
+        int flags = currentGame->getBoard()->countFlags();
+        if (!cell->getIsFlag() && flags >= currentGame->getBoard()->getTotalBombs()) {
+            notifier->showInfoMessage("Нельзя поставить больше флагов чем бомб!");
+            system("pause");
+            return;
+        }
+
+        cell->toggleFlag();
+        soundSystem->playClickSound();
+        moveCounter->addFlagMove();
+        string action = cell->getIsFlag() ? "Поставлен флаг" : "Убран флаг";
+        gameHistory->addMove(action, Coordinate(x, y));
+        logger->logMove(currentGame->getPlayer()->getName(), x, y, action);
+    }
+
+    void handleHint() {
+        Coordinate hint = hintSystem->getHint(*currentGame->getBoard());
+        if (hint.getX() != -1) {
+            notifier->showInfoMessage("Подсказка: безопасная клетка [" +
+                to_string(hint.getX()) + "," + to_string(hint.getY()) + "]");
+            system("pause");
+        }
+    }
+
+    void openAdjacentCells(int x, int y) {
+        for (int dy = -1; dy <= 1; dy++) {
+            for (int dx = -1; dx <= 1; dx++) {
+                if (dx == 0 && dy == 0) continue;
+
+                int newX = x + dx;
+                int newY = y + dy;
+
+                if (newX >= 0 && newX < currentGame->getBoard()->getWidth() &&
+                    newY >= 0 && newY < currentGame->getBoard()->getHeight()) {
+
+                    Cell* cell = currentGame->getBoard()->getCell(newX, newY);
+                    if (cell && !cell->getIsOpen() && !cell->getIsFlag() && !cell->getIsBomb()) {
+                        currentGame->makeMove(newX, newY);
+                        gameHistory->addMove("Автооткрытие", Coordinate(newX, newY));
+                        moveCounter->addSafeMove();
+
+                        if (cell->getCountBomb() == 0) {
+                            openAdjacentCells(newX, newY);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    void checkGameEnd() {
+        if (!currentGame->isGameRunning()) {
+            if (currentGame->getState() == 1) {
+                soundSystem->playWinSound();
+                handleWin();
+            }
+            else if (currentGame->getState() == 2) {
+                handleLoss();
+            }
+        }
+    }
+
+    void handleWin() {
+        Player* player = currentGame->getPlayer();
+        int gameTime = currentGame->getGameTime();
+
+        gameStats->addGame(true, gameTime);
+        gameStats->saveToFile("statistics.txt");
+
+        achievementSystem->checkAchievements(*player, gameTime, true, currentDifficulty);
+
+        ScoringSystem scoring;
+        int score = scoring.calculateScore(*player, gameTime);
+        scoreManager->addScore(player->getName(), score, gameTime,
+            getDifficultyString(currentDifficulty));
+
+        gamesBoard->addGame(player->getName(), gameTime, true);
+        gamesBoard->saveToFile();
+
+        if (playerProfile) {
+            playerProfile->addGameResult(true, gameTime);
+        }
+        notifier->showWinMessage();
+        logger->logGameEnd(player->getName(), true);
+        showGameSummary(true);
+    }
+
+    void handleLoss() {
+        Player* player = currentGame->getPlayer();
+        notifier->showLoseMessage();
+        logger->logGameEnd(player->getName(), false);
+        gameStats->addGame(false, currentGame->getGameTime());
+
+        gamesBoard->addGame(player->getName(), currentGame->getGameTime(), false);
+        gamesBoard->saveToFile();
+
+        if (playerProfile) {
+            playerProfile->addGameResult(false, currentGame->getGameTime());
+        }
+
+        showGameSummary(false);
+    }
+
+    void showGameResult() { 
+    }
+
+    void showGameSummary(bool won) {
+        system("cls");
+        printf("=== ИГРА ОКОНЧЕНА ===\n");
+        printf("Результат: %s\n", won ? "ПОБЕДА!" : "ПОРАЖЕНИЕ");
+        printf("Время: %d сек\n", currentGame->getGameTime());
+
+        if (currentGame->getPlayer()) {
+            printf("Игрок: %s\n", currentGame->getPlayer()->getName().c_str());
+            printf("Ошибок: %d\n", currentGame->getPlayer()->getMistakes());
+        }
+
+        printf("\n");
+        moveCounter->print();
+        printf("\n");
+        gameHistory->print();
+        printf("\nНажмите любую клавишу для продолжения...");
+        _getch();
+        soundSystem->stop();
+        gameRunning = false;
+    }
+
+    void showSettings() {
+        system("cls");
+        settings->inputSettings();
+        soundSystem->setEnabled(settings->getSounds() == 1);
+        system("pause");
+    }
+
+    void showHighScores() {
+        system("cls");
+        scoreManager->print();
+        system("pause");
+    }
+
+    void showAchievements() {
+        system("cls");
+        achievementSystem->print();
+        printf("\nРазблокировано: %d/%d достижений\n",
+            achievementSystem->getUnlockedCount(), 5);
+        system("pause");
+    }
+
+    void showStatistics() {
+        system("cls");
+        gameStats->print();
+        printf("\n");
+        moveCounter->print();
+        system("pause");
+    }
+
+    void showHelp() {
+        system("cls");
+        helpSystem->print();
+        system("pause");
+    }
+
+    void exitGame() {
+        printf("Спасибо за игру!\n");
+        system("pause");
+    }
+
+    int getDifficultyLevel(const string& difficulty) {
+        if (difficulty == "Легко") return 0;
+        if (difficulty == "Средне") return 1;
+        if (difficulty == "Сложно") return 2;
+        return 0;
+    }
+
+    string getDifficultyString(int level) {
+        switch (level) {
+        case 0: return "Легко";
+        case 1: return "Средне";
+        case 2: return "Сложно";
+        default: return "Легко";
+        }
     }
 };
 
