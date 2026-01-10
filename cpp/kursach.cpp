@@ -620,79 +620,28 @@ public:
 
 class Settings {
 private:
-    int autoBombs;
     int sounds;
-    int difficulty;
-    string themeName;
 
 public:
-    Settings() : autoBombs(1), sounds(1), difficulty(0), themeName("classic") {}
+    Settings() : sounds(1) {}
 
     void print() const {
         printf("=== НАСТРОЙКИ ===\n");
-        printf("Авторасстановка бомб: %s\n", autoBombs ? "Вкл" : "Выкл");
         printf("Звуки: %s\n", sounds ? "Вкл" : "Выкл");
-        printf("Сложность: ");
-        switch (difficulty) {
-        case 0: printf("Легко\n"); break;
-        case 1: printf("Средне\n"); break;
-        case 2: printf("Сложно\n"); break;
-        }
-        printf("Тема: %s\n", themeName.c_str());
     }
 
     void inputSettings() {
         printf("=== ВВОД НАСТРОЕК ===\n");
-        printf("Авторасстановка бомб (0-Выкл, 1-Вкл): ");
-        autoBombs = safeInputInt();
-
         printf("Звуки (0-Выкл, 1-Вкл): ");
         sounds = safeInputInt();
-
-        printf("Сложность (0-Легко, 1-Средне, 2-Сложно): ");
-        difficulty = safeInputInt();
-
-        printf("Тема (1-classic, 2-simple): ");
-        int themeChoice = safeInputInt();
-        themeName = (themeChoice == 2) ? "simple" : "classic";
     }
 
-    void toggleAutoBombs() {
-        autoBombs = !autoBombs;
-        printf("Авторасстановка бомб: %s\n", autoBombs ? "ВКЛ" : "ВЫКЛ");
-    }
 
     void toggleSounds() {
         sounds = !sounds;
         printf("Звуки: %s\n", sounds ? "ВКЛ" : "ВЫКЛ");
     }
-
-    void setDifficulty(int level) {
-        if (level >= 0 && level <= 2) {
-            difficulty = level;
-            const char* levels[] = { "Легко", "Средне", "Сложно" };
-            printf("Сложность установлена: %s\n", levels[level]);
-        }
-    }
-
-    void setTheme(const string& theme) {
-        themeName = theme;
-        printf("Тема установлена: %s\n", theme.c_str());
-    }
-
-    Board* createBoardByDifficulty() const {
-        switch (difficulty) {
-        case 0: return new Board(9, 9, 10);
-        case 1: return new Board(16, 16, 40);
-        case 2: return new Board(30, 16, 99);
-        default: return new Board(9, 9, 10);
-        }
-    }
-
-    int getAutoBombs() const { return autoBombs; }
     int getSounds() const { return sounds; }
-    int getDifficulty() const { return difficulty; }
-    string getTheme() const { return themeName; }
 };
 
 class Logger {
@@ -752,9 +701,11 @@ public:
         printf("6. Достижения\n");
         printf("7. Статистика\n");
         printf("8. Профиль игрока\n");
-        printf("9. История игр\n");
-        printf("10. Помощь\n");
-        printf("11. Выход\n");
+        printf("9. Текущую сессию\n");
+        printf("10. Анализ игрока\n");
+        printf("11. История игр\n");
+        printf("12. Помощь\n");
+        printf("13. Выход\n");
         return safeInputInt("Выберите: ");
     }
 
@@ -766,6 +717,8 @@ public:
         return safeInputInt("Выберите: ");
     }
 };
+
+
 
 class GameStats {
 private:
