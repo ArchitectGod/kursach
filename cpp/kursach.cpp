@@ -718,8 +718,6 @@ public:
     }
 };
 
-
-
 class GameStats {
 private:
     int gamesPlayed;
@@ -1050,9 +1048,11 @@ public:
 
 class AchievementSystem {
 private:
+    int counter;
     vector<Achievement> achievements;
 public:
     AchievementSystem() {
+        counter = 0;
         achievements.emplace_back("Новичок", "Сыграйте первую игру");
         achievements.emplace_back("Сапер", "Выиграйте 10 игр");
         achievements.emplace_back("Эксперт", "Выиграйте игру на сложном уровне");
@@ -1070,7 +1070,13 @@ public:
 
     void checkAchievements(const Player& player, int gameTime, bool won, int difficulty) {
         if (!won) return;
-
+        achievements[0].unlock();
+        if (counter != 10 && ((counter + 1) == 10)) {
+            achievements[1].unlock();
+        }
+        else {
+            counter += 1;
+        }
         if (gameTime < 60) {
             achievements[3].unlock();
         }
@@ -1552,6 +1558,7 @@ public:
         hintUsed = false;
     }
 };
+
 class HelpSystem {
 public:
     void print() const {
@@ -1677,7 +1684,6 @@ public:
         return moves.size();
     }
 };
-
 
 class MoveCounter {
 private:
@@ -1816,11 +1822,35 @@ private:
             case 6: showAchievements(); break;
             case 7: showStatistics(); break;
             case 8: showPlayerProfile(); break;
-            case 9: showGamesHistory(); break;
-            case 10: showHelp(); break;
-            case 11: exitGame(); return;
+            case 9: showplayerSession(); break;
+            case 10: showplayerAnalyzer(); break;
+            case 11: showGamesHistory(); break;
+            case 12: showHelp(); break;
+            case 13: exitGame(); return;
             }
         }
+    }
+
+    void showplayerAnalyzer() {
+        system("cls");
+        if (currentGame) {
+            gameAnalyzer->analyzePlayer(*(currentGame->getPlayer()));
+        }
+        else {
+            printf("Нет существующего игрока. Начните новую игру.\n");
+        }
+        system("pause");
+    }
+
+    void showplayerSession() {
+        system("cls");
+        if (playerSession) {
+            playerSession->print();
+        }
+        else {
+            printf("Нет существующей сессии. Начните новую игру.\n");
+        }
+        system("pause");
     }
 
     void showPlayerProfile() {
@@ -1853,15 +1883,17 @@ private:
             playerName = inputHandler->getPlayerName();
         } while (!validator->isValidName(playerName));
 
-        currentPlayerName = playerName;
+        if (!(currentPlayerName == playerName)) {
+            currentPlayerName = playerName;
+            Player* player = new Player(playerName);
+            playerProfile = make_unique<PlayerProfile>(player);
+            playerSession = make_unique<PlayerSession>(player);
+            playerSession->print();
+        }
+
 
         theme->select();
         renderer->setTheme(theme->getCellClosed(), theme->getBomb());
-
-        Player* player = new Player(playerName);
-
-        playerSession = make_unique<PlayerSession>(player);
-        playerProfile = make_unique<PlayerProfile>(player);
 
         playerSession->addGamePlayed();
 
@@ -1936,11 +1968,15 @@ private:
             system("pause");
             return false;
         }
-        currentGame = make_unique<Game>(new Board, new Player);
+        Player* player = new Player;
+
+        currentGame = make_unique<Game>(new Board, player);
         currentGame->deserialize(data);
+        playerProfile = make_unique<PlayerProfile>(player);
+        playerSession = make_unique<PlayerSession>(player);
+        playerSession->addGamePlayed();
         printf("Игра '%s' загружена\n", saves[choice - 1].c_str());
-        Player *pl = currentGame->getPlayer();
-        currentPlayerName = pl->getName();
+        currentPlayerName = player->getName();
         gameRunning = true;
         system("pause");
         return true;
@@ -2207,7 +2243,7 @@ private:
         notifier->showLoseMessage();
         logger->logGameEnd(player->getName(), false);
         gameStats->addGame(false, currentGame->getGameTime());
-
+        gameStats->saveToFile("statistics.txt");
         gamesBoard->addGame(player->getName(), currentGame->getGameTime(), false);
         gamesBoard->saveToFile();
 

@@ -1,13 +1,11 @@
 import java.util.*;
-import java.io.*;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.concurrent.TimeUnit;
 
 class AchievementSystem {
     private List<Achievement> achievements;
+    int counter;
 
     public AchievementSystem() {
+        counter = 0;
         this.achievements = new ArrayList<>();
 		achievements.add(new Achievement("Новичок", "Сыграйте первую игру"));
         achievements.add(new Achievement("Сапер", "Выиграйте 10 игр"));
@@ -25,19 +23,27 @@ class AchievementSystem {
     }
 
     public void checkAchievements(Player player, int gameTime, boolean won, int difficulty) {
+        achievements.get(0).unlock();
         if (!won) return;
 
+        if (counter + 1 == 10){
+            achievements.get(1).unlock();
+            counter += 1;
+        }
+        else{
+            counter += 1;
+        }
+        if (difficulty == 2) {
+            achievements.get(2).unlock();
+        }
         if (gameTime < 60) {
             achievements.get(3).unlock();
         }
-
         if (player.getMistakes() == 0) {
             achievements.get(4).unlock();
         }
 
-        if (difficulty == 2) {
-            achievements.get(2).unlock();
-        }
+
     }
 
     public int getUnlockedCount() {

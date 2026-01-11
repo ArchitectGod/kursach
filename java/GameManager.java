@@ -1,11 +1,8 @@
 import java.util.*;
-import java.io.*;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.concurrent.TimeUnit;
 
 class GameManager {
     private Game currentGame;
+    private Menu menu;
     private Settings settings;
     private Logger logger;
     private HighScoreManager scoreManager;
@@ -25,6 +22,7 @@ class GameManager {
     private int currentDifficulty;
 
     public GameManager() {
+        menu = new Menu();
         settings = new Settings();
         logger = new Logger();
 		scoreManager = new HighScoreManager();
@@ -52,16 +50,9 @@ class GameManager {
     private void showMainMenu(Scanner scanner) {
         while (true) {
             clearScreen();
-            System.out.println("=== САПЕР ===");
-            System.out.println("1. Новая игра");
-            System.out.println("2. Настройки");
-            System.out.println("3. Таблица рекордов");
-            System.out.println("4. Достижения");
-            System.out.println("5. Статистика");
-            System.out.println("6. Помощь");
-            System.out.println("7. Выход");
+            menu.print();
             
-            int choice = InputUtils.safeInputInt(scanner, "Выберите: ");
+            int choice = menu.getChoice(scanner);
 
             switch (choice) {
                 case 1: startNewGame(scanner); break;
